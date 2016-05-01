@@ -9,7 +9,7 @@ except:
     import urllib as rq
 
 def Usage():
-    print("Usage: get_events.py -Yminyear/minmonth/minday/maxyear/maxmonth/maxday [-Rminlon/maxlon/minlat/maxlon] [-Dcenterlat/centerlon/minradius/maxradius] [-Hdepth] [-Mminmag/maxmag[/magtype]] [-cCatalog] [-stime|mag]")
+    print("Usage: get_events.py -Yminyear/minmonth/minday/maxyear/maxmonth/maxday [-Rminlon/maxlon/minlat/maxlon] [-Dcenterlat/centerlon/minradius/maxradius] [-Hmindepth/maxdepth] [-Mminmag/maxmag[/magtype]] [-cCatalog] [-stime|mag]")
     print("-Y -- Limit to events occurring between this range.")
     print("-R -- BOX search terms (incompatible with radial search)")
     print("-D -- RADIAL search terms (incompatible with the box search)")
