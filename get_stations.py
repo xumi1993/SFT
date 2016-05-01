@@ -50,6 +50,9 @@ for op, value in opts:
         mon2 = yrange_sp[4]
         day2 = yrange_sp[5]
         date_label = 'start='+year1+'-'+mon1+'-'+day1+'&end='+year2+'-'+mon2+'-'+day2+'&'
+    else:
+        print("Invalid arguments")
+        sys.exit(1)
 
 url = "http://service.iris.edu/irisws/fedcatalog/1/query?"
 url += lalo_label+net_label+sta_label+loc_label+cha_label+date_label
