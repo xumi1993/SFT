@@ -94,7 +94,6 @@ for op, value in opts:
 url = 'http://service.iris.edu/fdsnws/event/1/query?format=text&'
 url += lalo_label+dep_label+mag_label+cata_label+date_label
 url = url[:-1]
-print(url)
 try:
     response = rq.urlopen(url)
 except:
