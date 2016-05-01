@@ -72,7 +72,7 @@ for op, value in opts:
             day2 = '0'+day2
         date_label = 'start='+year1+'-'+mon1+'-'+day1+'T00:00:00&end='+year2+'-'+mon2+'-'+day2+'T00:00:00&'
     elif op == "-c":
-        cata_label = value
+        cata_label = 'catalog='+value+'&'
     elif op == "-M":
         mag1 = value.split("/")[0]
         mag2 = value.split("/")[1]
@@ -94,6 +94,7 @@ for op, value in opts:
 url = 'http://service.iris.edu/fdsnws/event/1/query?format=text&'
 url += lalo_label+dep_label+mag_label+cata_label+date_label
 url = url[:-1]
+print(url)
 try:
     response = rq.urlopen(url)
 except:
