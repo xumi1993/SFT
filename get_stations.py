@@ -16,7 +16,7 @@ loc_label = ''
 cha_label = ''
 date_label = ''
 try:
-    opts,args = getopt.getopt(sys.argv[1:], "R:D:Y:C:N:S:L:")
+    opts,args = getopt.getopt(sys.argv[1:], "R:D:Y:c:n:s:l:")
 except:
     print("Invalid arguments")
     sys.exit(1)
@@ -33,13 +33,13 @@ for op, value in opts:
         dist1 = value.split("/")[2]
         dist2 = value.split("/")[3]
         lalo_label ='lat='+lat+'&lon='+lon+'&maxradius='+dist2+'&minradius='+dist1+'&'
-    elif op == "-N":
+    elif op == "-n":
         net_label = 'net='+value+'&'
-    elif op == "-S":
+    elif op == "-s":
         sta_label = 'sta='+value+'&'
-    elif op == "-L":
+    elif op == "-l":
         loc_label = 'loc='+value+'&'
-    elif op == "-C":
+    elif op == "-c":
         cha_label = 'cha='+value+'&'
     elif op == "-Y":
         yrange_sp = value.split("/")
@@ -57,7 +57,11 @@ for op, value in opts:
 url = "http://service.iris.edu/irisws/fedcatalog/1/query?"
 url += lalo_label+net_label+sta_label+loc_label+cha_label+date_label
 url = url[:-1]
-response = rq.urlopen(url)
+try:
+    response = rq.urlopen(url)
+except:
+    print("No data is found")
+    sys.exit(1)
 html = response.read().decode()
 find_re = re.compile(r'\w+\s+\w+\s[^A-Za-z]{2}\s+\w+\s+\d+.+?\n',re.DOTALL)
 sta_lst = find_re.findall(html)

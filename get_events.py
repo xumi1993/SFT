@@ -8,13 +8,33 @@ try:
 except:
     import urllib as rq
 
+def Usage():
+    print("Usage: get_events.py -Yminyear/minmonth/minday/maxyear/maxmonth/maxday [-Rminlon/maxlon/minlat/maxlon] [-Dcenterlat/centerlon/minradius/maxradius] [-Hdepth] [-Mminmag/maxmag[/magtype]] [-cCatalog] [-stime|mag]")
+    print("-Y -- Limit to events occurring between this range.")
+    print("-R -- BOX search terms (incompatible with radial search)")
+    print("-D -- RADIAL search terms (incompatible with the box search)")
+    print("-H -- Limit to events with depth between this range.")
+    print("-M -- Limit to events with magnitude between this range.\n\
+            Specify magnitude type e.g., ML, Ms, mb, Mw")
+    print("-c -- Specify the catalog from which origins and magnitudes will be retrieved.\n\
+            avaliable catalogs: ANF, GCMT, ISC, UoFW, NEIC")
+    print("-s -- Order results by time or magnitude, default in time.")
+
 lalo_label = ''
 dep_label = ''
 date_label = ''
+mag_label = ''
+sort_label = ''
+cata_label = ''
 try:
-    opts,args = getopt.getopt(sys.argv[1:], "R:D:Y:C:H:M:")
+    opts,args = getopt.getopt(sys.argv[1:], "R:D:Y:c:H:M:s:")
 except:
     print("Invalid arguments")
+    Usage()
+    sys.exit(1)
+if sys.argv[1:] == []:
+    print("No argument is found")
+    Usage()
     sys.exit(1)
 
 for op, value in opts:
@@ -42,15 +62,46 @@ for op, value in opts:
         year2 = yrange_sp[3]
         mon2 = yrange_sp[4]
         day2 = yrange_sp[5]
-        date_label = 'start='+year1+'-'+mon1+'-'+day1+'&end='+year2+'-'+mon2+'-'+day2+'&'
-    elif op == "-C":
+        if len(mon1) == 1:
+            mon1 = '0'+mon1
+        if len(day1) == 1:
+            day1 = '0'+day1
+        if len(mon2) == 1:
+            mon2 = '0'+mon2
+        if len(day2) == 1:
+            day2 = '0'+day2
+        date_label = 'start='+year1+'-'+mon1+'-'+day1+'T00:00:00&end='+year2+'-'+mon2+'-'+day2+'T00:00:00&'
+    elif op == "-c":
         cata_label = value
     elif op == "-M":
         mag1 = value.split("/")[0]
         mag2 = value.split("/")[1]
-        mtype = value.split("/")[2]
-        mag_label = 'minmag='+mag1+'&maxmag='+mag2+'&magtype='+mtype+'&'
+        if len(value.split("/")) == 2:
+            mag_label = 'minmag='+mag1+'&maxmag='+mag2+'&'
+        else:
+            mtype = value.split("/")[2]
+            mag_label = 'minmag='+mag1+'&maxmag='+mag2+'&magtype='+mtype+'&'
+    elif op == "-S":
+        if value.lower() == 'mag':
+            sort_label = 'orderby=magnitude&'
+        else:
+            sort_label = ''
     else:
         print("Invalid arguments")
+        Usage()
         sys.exit(1)
 
+url = 'http://service.iris.edu/fdsnws/event/1/query?format=text&'
+url += lalo_label+dep_label+mag_label+cata_label+date_label
+url = url[:-1]
+try:
+    response = rq.urlopen(url)
+except:
+    print("No data is found")
+    sys.exit(1)
+evt_lst = response.readlines()
+for evt in evt_lst:
+    evt = evt.decode().strip()
+    if evt[0] == '#':
+        continue
+    print(evt)
