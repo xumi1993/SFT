@@ -1,5 +1,7 @@
-#!/usr/bin/env python
-
+# Units of SFT 
+#
+# Author: Mijian Xu, Tao Gou, Haibo Wang
+#
 
 import re
 import sys
@@ -16,11 +18,11 @@ class Stations:
    Based on URL Builder: station v.1
    '''
 
-   url = 'http://service.iris.edu/irisws/fedcatalog/1/'
+   url = 'http://service.iris.edu/fdsnws/station/1/'
 
    def __init__(self, lalo_label, net_label, sta_label, loc_label, cha_label, date_label):
-       self.urllink = ('%squery?%s%s%s%s%s%s' %(self.url, lalo_label,
-           net_label, sta_label, loc_label, cha_label, date_label))[:-1]
+       self.urllink = ('%squery?%s%s%s%s%s%sformat=text' %(self.url, lalo_label,
+           net_label, sta_label, loc_label, cha_label, date_label))
 
    def download(self):
       try:
@@ -31,13 +33,7 @@ class Stations:
 
    def output(self):
       html = self.response.read().decode()
-      find_re = re.compile(r'\w+\s+\w+\s[^A-Za-z]{2}\s+\w+\s+\d+.+?\n',re.DOTALL)
-      sta_lst = find_re.findall(html)
-      if sta_lst == []:
-          print("No data is found")
-          sys.exit(1)
-      for sta_info in sta_lst:
-          print(sta_info.strip())
+      print(html.strip())
 
 
 class Events:
@@ -49,7 +45,7 @@ class Events:
 
    def __init__(self, lalo_label, dep_label, mag_label, cata_label, date_label):
        self.urllink = ('%squery?format=text&%s%s%s%s%s' %(self.url, lalo_label, 
-                         dep_label,  mag_label, cata_label, date_label))[:-1]
+                         dep_label, mag_label, cata_label, date_label))[:-1]
 
    def download(self):
       try:
@@ -81,7 +77,7 @@ class Timeseries:
         self.urllink = '%squery?net=%s&sta=%s&cha=%s&start=%s&end=%s&output=%s&loc=%s' %(self.url,network,station,channel,starttime,endtime,output,location)
 
     def bar(self, response, chunk_size=8192):
-       total_size = response.info().getheader('Content-Length').strip()
+       total_size = response.headers['Content-Length'].strip()
        total_size = int(total_size)
        cycle = int(total_size/chunk_size)+1
        bytes_so_far = 0
@@ -92,9 +88,15 @@ class Timeseries:
         
        bar.cursor.clear_lines(2)
        bar.cursor.save()
-       chunk_all = ''
        for i in range(cycle):
           chunk = response.read(chunk_size)
+          if i == 0:
+              if type(chunk) != str:
+                  chunk_all = b''
+                  itype = 'bytes'
+              else:
+                  chunk_all = ''
+                  itype = 'str'
           bytes_so_far += len(chunk)
           chunk_all += chunk
           percentage = int(bytes_so_far*100/total_size)
@@ -102,25 +104,43 @@ class Timeseries:
           bar.draw(value=percentage)
 
           print('%dbyte/%dbyte' %(bytes_so_far,total_size))
-            
-#            if not chunk:
-#                break
-
-       return chunk_all
+       return chunk_all,itype
 
     def download(self):
         download_url = self.urllink
-#        print download_url
         try:
             response = rq.urlopen(download_url)
             #   print(response.getcode())
         except:
            print('Something wrong for unknown reason!')
-           sys.exit(1)            
+           sys.exit(1)
         filename = response.headers['Content-Disposition'].split('=')[1]
-        data = self.bar(response)
+        data,itype = self.bar(response)
 #        data = response.read()
-        with open(filename,'w') as f:
-            f.write(data)
+        if itype == 'bytes':
+            with open(filename,'wb') as f:
+                f.write(data)
+        else:
+            with open(filename,'w') as f:
+                f.write(data)
 
+class Traveltime:
+    """
+    Based on 'URL Builder: traveltimes v.1'
+    """
 
+    url = 'http://service.iris.edu/irisws/traveltime/1/'
+
+    def __init__(self, model_label, phases_label, evdp_label, nohder_label, dist_label):
+        self.urllink = ('%squery?%s%s%s%s%s' % (self.url, model_label, phases_label, evdp_label, nohder_label, dist_label))
+
+    def download(self):
+        try:
+            self.response = rq.urlopen(self.urllink)
+        except:
+            print("Something wrong for unknown reason!")
+            sys.exit(1)
+
+    def output(self):
+        phs = self.response.read().decode()
+        print(phs)

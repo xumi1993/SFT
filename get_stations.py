@@ -1,6 +1,8 @@
 #!/usr/bin/env python
-
-
+#
+# Fetch stations in IRIS DMC based on IRIS-WS
+# Author: Mijian Xu, Tao Gou
+#
 import re
 import sys
 import getopt
@@ -9,6 +11,16 @@ try:
     import urllib.request as rq
 except:
     import urllib as rq
+
+def Usage():
+    print("Usage: get_events.py [-Yminyear/minmonth/minday/maxyear/maxmonth/maxday] [-Rminlon/maxlon/minlat/maxlon] [-Dcenterlat/centerlon/minradius/maxradius] [-nNetwork] [-sStation] [-lLocation] [-cChannel]")
+    print("-Y -- Limit to events occurring between this range.")
+    print("-R -- BOX search terms (incompatible with radial search)")
+    print("-D -- RADIAL search terms (incompatible with the box search)")
+    print("-n -- Specify network")
+    print("-s -- Specify station")
+    print("-l -- Spicify locations")
+    print("-c -- Specify channel")
 
 def opt():
    lalo_label = ''
@@ -21,7 +33,15 @@ def opt():
        opts,args = getopt.getopt(sys.argv[1:], "R:D:Y:c:n:s:l:")
    except:
        print("Invalid arguments")
+       Usage()
        sys.exit(1)
+
+   allop = [op for op, value in opts]
+   if allop.count("-R") and allop.count("-D"):
+      print("CONNOT specify -R and -D at the same time")
+      Usage()
+      sys.exit(1)
+
    for op, value in opts:
        if op == "-R":
            lon1 = value.split("/")[0]
