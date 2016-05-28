@@ -4,7 +4,6 @@ import re
 import sys
 import getopt
 from util import Events
-
 try:
     import urllib.request as rq
 except:

@@ -5,8 +5,8 @@
 
 import re
 import sys
+from os.path import join
 from progressive.bar import Bar
-
 try:
     import urllib.request as rq
 except:
@@ -74,7 +74,7 @@ class Timeseries:
     def __init__(self,network,station,location,channel,starttime,endtime,output):
 #        if output not in self._format:
 #            raise ValueError('Output format(\'%s\') is invalid!' %output)
-        self.urllink = '%squery?net=%s&sta=%s&cha=%s&start=%s&end=%s&output=%s&loc=%s' %(self.url,network,station,channel,starttime,endtime,output,location)
+        self.urllink = '%squery?net=%s&sta=%s&cha=%s&start=%s&end=%s&output=%s&loc=%s' % (self.url,network,station,channel,starttime,endtime,output,location)
 
     def bar(self, response, chunk_size=8192):
        total_size = response.headers['Content-Length'].strip()
@@ -144,3 +144,43 @@ class Traveltime:
     def output(self):
         phs = self.response.read().decode()
         print(phs)
+
+class Response:
+    """
+    Based on "resp v.1" and "sacpz v.1"
+    """
+
+    def __init__(self, network, station, location, channel, istime, timeinfo, ispz):
+        self.network = network
+        self.station = station
+        self.channel = channel
+        self.location = location
+        self.ispz = ispz
+        if ispz:
+            self.url = 'http://service.iris.edu/irisws/sacpz/1/'
+        else:
+            self.url = 'http://service.iris.edu/irisws/resp/1/'
+        if istime == 1:
+            self.urllink = ('%squery?net=%s&sta=%s&loc=%s&cha=%s&time=%s' % (self.url, network, station,
+                location, channel, timeinfo[0].strftime('%Y-%m-%dT%H:%M:%S')))
+        elif istime == 2:
+            self.urllink = ('%squery?net=%s&sta=%s&loc=%s&cha=%s&starttime=%s&endtime=%s' % (self.url, network, station, 
+                location, channel, timeinfo[0].strftime('%Y-%m-%dT%H:%M:%S'), timeinfo[0].strftime('%Y-%m-%dT%H:%M:%S')))
+        else:
+            self.urllink = ('%squery?net=%s&sta=%s&loc=%s&cha=%s' % (self.url, network, station, 
+                location, channel))
+
+    def download(self, path):
+        try:
+            response = rq.urlopen(self.urllink)
+        except:
+            print("Something wrong for unknown reason!")
+            sys.exit(1)
+        if self.ispz:
+            filename = "SAC_PZs_%s_%s_%s_%s" % (self.network, self.station, self.channel, self.location)
+        else:
+            filename = response.headers.get_filename()
+        data = response.read().decode()
+        with open(join(path, filename), 'w') as f:
+            f.write(data)
+
