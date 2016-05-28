@@ -12,6 +12,38 @@ try:
 except:
     import urllib as rq
 
+def bar(response, chunk_size=8192):
+   if response.headers['Content-Length'] == None:
+      print(response.read())
+      print("No response of server")
+      sys.exit(1)
+   total_size = response.headers['Content-Length'].strip()
+   total_size = int(total_size)
+   cycle = int(total_size/chunk_size)+1
+   bytes_so_far = 0
+
+   MAX_VALUE = 100
+
+   bar = Bar(max_value=MAX_VALUE, num_rep="percentage", fallback=True)
+    
+   bar.cursor.clear_lines(2)
+   bar.cursor.save()
+   for i in range(cycle):
+      chunk = response.read(chunk_size)
+      if i == 0:
+          if type(chunk) != str:
+              chunk_all = b''
+              itype = 'bytes'
+          else:
+              chunk_all = ''
+              itype = 'str'
+      bytes_so_far += len(chunk)
+      chunk_all += chunk
+      percentage = int(bytes_so_far*100/total_size)
+      bar.cursor.restore()
+      bar.draw(value=percentage)
+      print('%dbyte/%dbyte' %(bytes_so_far,total_size))
+   return chunk_all,itype
 
 class Stations:
    '''
@@ -34,7 +66,6 @@ class Stations:
    def output(self):
       html = self.response.read().decode()
       print(html.strip())
-
 
 class Events:
    '''
@@ -76,36 +107,6 @@ class Timeseries:
 #            raise ValueError('Output format(\'%s\') is invalid!' %output)
         self.urllink = '%squery?net=%s&sta=%s&cha=%s&start=%s&end=%s&output=%s&loc=%s' % (self.url,network,station,channel,starttime,endtime,output,location)
 
-    def bar(self, response, chunk_size=8192):
-       total_size = response.headers['Content-Length'].strip()
-       total_size = int(total_size)
-       cycle = int(total_size/chunk_size)+1
-       bytes_so_far = 0
-
-       MAX_VALUE = 100
-
-       bar = Bar(max_value=MAX_VALUE, num_rep="percentage", fallback=True)
-        
-       bar.cursor.clear_lines(2)
-       bar.cursor.save()
-       for i in range(cycle):
-          chunk = response.read(chunk_size)
-          if i == 0:
-              if type(chunk) != str:
-                  chunk_all = b''
-                  itype = 'bytes'
-              else:
-                  chunk_all = ''
-                  itype = 'str'
-          bytes_so_far += len(chunk)
-          chunk_all += chunk
-          percentage = int(bytes_so_far*100/total_size)
-          bar.cursor.restore()
-          bar.draw(value=percentage)
-
-          print('%dbyte/%dbyte' %(bytes_so_far,total_size))
-       return chunk_all,itype
-
     def download(self):
         download_url = self.urllink
         try:
@@ -115,7 +116,7 @@ class Timeseries:
            print('Something wrong for unknown reason!')
            sys.exit(1)
         filename = response.headers['Content-Disposition'].split('=')[1]
-        data,itype = self.bar(response)
+        data,itype = bar(response)
 #        data = response.read()
         if itype == 'bytes':
             with open(filename,'wb') as f:
@@ -180,7 +181,8 @@ class Response:
             filename = "SAC_PZs_%s_%s_%s_%s" % (self.network, self.station, self.channel, self.location)
         else:
             filename = response.headers.get_filename()
-        data = response.read().decode()
+        data,itype = bar(response)
+#        data = response.read().decode()
         with open(join(path, filename), 'w') as f:
-            f.write(data)
+            f.write(data.decode())
 
