@@ -14,7 +14,6 @@ except:
 
 def bar(response, chunk_size=8192):
    if response.headers['Content-Length'] == None:
-      print(response.read())
       print("No response of server")
       sys.exit(1)
    total_size = response.headers['Content-Length'].strip()
@@ -181,8 +180,9 @@ class Response:
             filename = "SAC_PZs_%s_%s_%s_%s" % (self.network, self.station, self.channel, self.location)
         else:
             filename = response.headers.get_filename()
-        data,itype = bar(response)
-#        data = response.read().decode()
+#        data,itype = bar(response)
+        print("Downloading %s..." % filename)
+        data = response.read().decode()
         with open(join(path, filename), 'w') as f:
-            f.write(data.decode())
+            f.write(data)
 
