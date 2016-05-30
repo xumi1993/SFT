@@ -92,10 +92,10 @@ def opt():
             print("Invalid arguments")
             Usage()
             sys.exit(1)
-        return lalo_label, dep_label, mag_label, cata_label, date_label
+    return lalo_label, dep_label, mag_label, cata_label, date_label
 
 def main():
-    lalo_label, dep_label, mag_label, cata_label, date_label = opt()
+    lalo_label, dep_label, mag_label, cata_label, date_label = opt()    
     events = Events(lalo_label, dep_label, mag_label, cata_label, date_label)
     events.download()
     events.output()
