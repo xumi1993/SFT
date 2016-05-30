@@ -13,7 +13,9 @@ except:
     import urllib as rq
 
 def Usage():
-    print("Usage: get_events.py [-Yminyear/minmonth/minday/maxyear/maxmonth/maxday] [-Rminlon/maxlon/minlat/maxlon] [-Dcenterlat/centerlon/minradius/maxradius] [-nNetwork] [-sStation] [-lLocation] [-cChannel]")
+    print("Usage: get_events.py [-Yminyear/minmonth/minday/maxyear/maxmonth/maxday] "
+          "[-Rminlon/maxlon/minlat/maxlon] [-Dcenterlat/centerlon/minradius/maxradius] "
+          "[-nNetwork] [-sStation] [-lLocation] [-cChannel] [-Llevel]")
     print("-Y -- Limit to events occurring between this range.")
     print("-R -- BOX search terms (incompatible with radial search)")
     print("-D -- RADIAL search terms (incompatible with the box search)")
@@ -21,6 +23,7 @@ def Usage():
     print("-s -- Specify station")
     print("-l -- Spicify locations")
     print("-c -- Specify channel")
+    print("-L -- Specify level of detail using 'network', 'station', 'channel' or 'response'")
 
 def opt():
    lalo_label = ''
@@ -29,8 +32,9 @@ def opt():
    loc_label = ''
    cha_label = ''
    date_label = ''
+   level_label = ''
    try:
-       opts,args = getopt.getopt(sys.argv[1:], "R:D:Y:c:n:s:l:")
+       opts, args = getopt.getopt(sys.argv[1:], "R:D:Y:c:n:s:l:L:")
    except:
        print("Invalid arguments")
        Usage()
@@ -39,6 +43,9 @@ def opt():
    allop = [op for op, value in opts]
    if allop.count("-R") and allop.count("-D"):
       print("CONNOT specify -R and -D at the same time")
+      Usage()
+      sys.exit(1)
+   elif allop == []:
       Usage()
       sys.exit(1)
 
@@ -80,15 +87,18 @@ def opt():
            if len(day2) == 1:
               day2 = '0'+day2
            date_label = 'start='+year1+'-'+mon1+'-'+day1+'&end='+year2+'-'+mon2+'-'+day2+'&'
+       elif op == "-L":
+           level = value.lower()
+           level_label = 'level='+level+'&'
        else:
            print("Invalid arguments")
            sys.exit(1)
 
-   return lalo_label, net_label, sta_label, loc_label, cha_label, date_label
+   return lalo_label, net_label, sta_label, loc_label, cha_label, date_label, level_label
 
 def main():
-   lalo_label, net_label, sta_label, loc_label, cha_label, date_label = opt()
-   stations = Stations(lalo_label, net_label, sta_label, loc_label, cha_label, date_label)
+   lalo_label, net_label, sta_label, loc_label, cha_label, date_label, level_label = opt()
+   stations = Stations(lalo_label, net_label, sta_label, loc_label, cha_label, date_label, level_label)
    stations.download()
    stations.output()
 

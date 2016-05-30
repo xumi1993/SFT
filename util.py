@@ -2,6 +2,9 @@
 #
 # Author: Mijian Xu, Tao Gou, Haibo Wang
 #
+# History: 2016-05-07 Init codes, Tao Gou
+#          2016-05-27 Add class of get_traveltime, Haibo Wang
+#          2016-05-28 Add class of get_resp, Mijian Xu
 
 import re
 import sys
@@ -42,7 +45,7 @@ def bar(response, chunk_size=8192):
       bar.cursor.restore()
       bar.draw(value=percentage)
       print('%dbyte/%dbyte' %(bytes_so_far,total_size))
-   return chunk_all,itype
+   return chunk_all, itype
 
 class Stations:
    '''
@@ -51,9 +54,9 @@ class Stations:
 
    url = 'http://service.iris.edu/fdsnws/station/1/'
 
-   def __init__(self, lalo_label, net_label, sta_label, loc_label, cha_label, date_label):
-       self.urllink = ('%squery?%s%s%s%s%s%sformat=text' %(self.url, lalo_label,
-           net_label, sta_label, loc_label, cha_label, date_label))
+   def __init__(self, lalo_label, net_label, sta_label, loc_label, cha_label, date_label, level_label):
+       self.urllink = ('%squery?%s%s%s%s%s%s%sformat=text' %(self.url, lalo_label,
+           net_label, sta_label, loc_label, cha_label, date_label, level_label))
 
    def download(self):
       try:
@@ -101,10 +104,11 @@ class Timeseries:
 #    _format = ['miniseed', 'ascii1', 'ascii2', 'audio', 'plot', 'saca', 'sacbb', 'sacbl']
     url = 'http://service.iris.edu/irisws/timeseries/1/'
 
-    def __init__(self,network,station,location,channel,starttime,endtime,output):
+    def __init__(self, network, station, location, channel, starttime, endtime, output):
 #        if output not in self._format:
 #            raise ValueError('Output format(\'%s\') is invalid!' %output)
-        self.urllink = '%squery?net=%s&sta=%s&cha=%s&start=%s&end=%s&output=%s&loc=%s' % (self.url,network,station,channel,starttime,endtime,output,location)
+        self.urllink = '%squery?net=%s&sta=%s&cha=%s&start=%s&end=%s&output=%s&loc=%s' % \
+                       (self.url, network, station, channel, starttime, endtime, output, location)
 
     def download(self):
         download_url = self.urllink
@@ -132,7 +136,8 @@ class Traveltime:
     url = 'http://service.iris.edu/irisws/traveltime/1/'
 
     def __init__(self, model_label, phases_label, evdp_label, nohder_label, dist_label):
-        self.urllink = ('%squery?%s%s%s%s%s' % (self.url, model_label, phases_label, evdp_label, nohder_label, dist_label))
+        self.urllink = ('%squery?%s%s%s%s%s' % (self.url, model_label, phases_label,
+                                                evdp_label, nohder_label, dist_label))
 
     def download(self):
         try:
@@ -180,9 +185,7 @@ class Response:
             filename = "SAC_PZs_%s_%s_%s_%s" % (self.network, self.station, self.channel, self.location)
         else:
             filename = response.headers.get_filename()
-#        data,itype = bar(response)
         print("Downloading %s..." % filename)
         data = response.read().decode()
         with open(join(path, filename), 'w') as f:
             f.write(data)
-
