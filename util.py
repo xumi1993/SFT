@@ -65,9 +65,9 @@ class Stations:
 
    url = 'http://service.iris.edu/fdsnws/station/1/'
 
-   def __init__(self, lalo_label, net_label, sta_label, loc_label, cha_label, date_label, level_label):
-       self.urllink = ('%squery?%s%s%s%s%s%s%sformat=text' %(self.url, lalo_label,
-           net_label, sta_label, loc_label, cha_label, date_label, level_label))
+   def __init__(self, lalo_label, net_label, sta_label, loc_label, cha_label, dateb_label, datee_label, level_label):
+       self.urllink = ('%squery?%s%s%s%s%s%s%s%sformat=text' %(self.url, lalo_label,
+           net_label, sta_label, loc_label, cha_label,dateb_label, datee_label, level_label))
 
    def download(self):
       try:
