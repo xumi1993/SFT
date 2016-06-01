@@ -15,7 +15,8 @@ def Usage():
     print("Usage: get_events.py [-b start-time] [-e end-time]"
           "[-Rminlon/maxlon/minlat/maxlon] [-Dcenterlat/centerlon/minradius/maxradius] "
           "[-nNetwork] [-sStation] [-lLocation] [-cChannel] [-Llevel]")
-    print("-b -- Limit to events occurring between this range.")
+    print("-b -- Limit to events occurring on or after the specified start time.")
+    print("-e -- Limit to events occurring on or before the specified end time.")
     print("-R -- BOX search terms (incompatible with radial search)")
     print("-D -- RADIAL search terms (incompatible with the box search)")
     print("-n -- Specify network")
@@ -74,7 +75,7 @@ def opt():
             begintime = get_time(value)
             dateb_label = 'start='+begintime.strftime("%Y-%m-%dT%H:%M:%S")+'&'
         elif op == "-e":
-            endtime - get_time(value)
+            endtime = get_time(value)
             datee_label = 'end='+endtime.strftime("%Y-%m-%dT%H:%M:%S")+'&'
         elif op == "-L":
             level = value.lower()
@@ -83,13 +84,13 @@ def opt():
             print("Invalid arguments")
             sys.exit(1)
 
-   return lalo_label, net_label, sta_label, loc_label, cha_label, dateb_label, datee_label, level_label
+    return lalo_label, net_label, sta_label, loc_label, cha_label, dateb_label, datee_label, level_label
 
 def main():
-   lalo_label, net_label, sta_label, loc_label, cha_label, dateb_label, datee_label, level_label = opt()
-   stations = Stations(lalo_label, net_label, sta_label, loc_label, cha_label, dateb_label, datee_label, level_label)
-   stations.download()
-   stations.output()
+    lalo_label, net_label, sta_label, loc_label, cha_label, dateb_label, datee_label, level_label = opt()
+    stations = Stations(lalo_label, net_label, sta_label, loc_label, cha_label, dateb_label, datee_label, level_label)
+    stations.download()
+    stations.output()
 
 if __name__ == '__main__':
    main()

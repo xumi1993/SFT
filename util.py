@@ -1,10 +1,12 @@
 # Units of SFT 
 #
-# Author: Mijian Xu, Tao Gou, Haibo Wang
+# Author: Mijian Xu, Tao Gou, Haibo Wang @ Nanjing University
 #
 # History: 2016-05-07 Init codes, Tao Gou
 #          2016-05-27 Add class of get_traveltime, Haibo Wang
 #          2016-05-28 Add class of get_resp, Mijian Xu
+#          2016-06-01 Add class of Syngines, Haibo Wang
+#
 
 import re
 import sys
@@ -27,9 +29,9 @@ def get_time(timestr):
     return time
 
 def bar(response, chunk_size=8192):
-    if response.headers['Content-Length'] == None:
-        print("No response of server")
-        sys.exit(1)
+#    if response.headers['Content-Length'] == None:
+#        print("No response of server")
+#        sys.exit(1)
     total_size = response.headers['Content-Length'].strip()
     total_size = int(total_size)
     cycle = int(total_size/chunk_size)+1
@@ -57,6 +59,7 @@ def bar(response, chunk_size=8192):
         bar.draw(value=percentage)
         print('%dbyte/%dbyte' %(bytes_so_far,total_size))
     return chunk_all, itype
+
 
 class Stations:
    '''
@@ -113,16 +116,29 @@ class Timeseries:
     '''
 
 #    _format = ['miniseed', 'ascii1', 'ascii2', 'audio', 'plot', 'saca', 'sacbb', 'sacbl']
-    url = 'http://service.iris.edu/irisws/timeseries/1/'
-
+#    url = 'http://service.iris.edu/irisws/timeseries/1/'
+    url = 'http://service.iris.edu/fdsnws/dataselect/1/'
+    
     def __init__(self, network, station, location, channel, starttime, endtime, output):
+        self.network = network
+        self.station = station
+        self.channel = channel
+        self.location = location
+        self.starttime = starttime
+        self.endtime = endtime
 #        if output not in self._format:
 #            raise ValueError('Output format(\'%s\') is invalid!' %output)
-        self.urllink = '%squery?net=%s&sta=%s&cha=%s&start=%s&end=%s&output=%s&loc=%s' % \
-                       (self.url, network, station, channel, starttime, endtime, output, location)
+        self.urllink = '%squery?net=%s&sta=%s&loc=%s&cha=%s&start=%s&end=%s' % \
+                       (self.url, network, station, location, channel, starttime, endtime)
 
-    def download(self):
+    def download(self, path):
         download_url = self.urllink
+        print(download_url)
+        filename = join(path, "%s.%s.%s.%s.%s.%s.mseed" % \
+                (self.network, self.station, self.location, self.channel, self.starttime, self.endtime))
+        print("Downloading data to %s......" % filename)
+        rq.urlretrieve(download_url, join(path, filename))
+'''
         try:
             response = rq.urlopen(download_url)
             #   print(response.getcode())
@@ -133,11 +149,12 @@ class Timeseries:
         data,itype = bar(response)
 #        data = response.read()
         if itype == 'bytes':
-            with open(filename,'wb') as f:
+            with open(join(path, filename),'wb') as f:
                 f.write(data)
         else:
-            with open(filename,'w') as f:
+            with open(join(path, filename),'w') as f:
                 f.write(data)
+'''
 
 class Traveltime:
     """
@@ -200,3 +217,29 @@ class Response:
         data = response.read().decode()
         with open(join(path, filename), 'w') as f:
             f.write(data)
+            
+class Syngines:
+    """
+    Based on "syngines v.1"
+    """
+
+    url = 'http://service.iris.edu/irisws/syngine/1/'
+
+    def __init__(self,source,receiver,data_range,model,format_out,misc_ops):
+        self.urllink = '%squery?%s%s%s%s%s%snodata=404' % (self.url,source,receiver,data_range,model,format_out,misc_ops)
+
+    def download(self):
+        download_url = self.urllink
+        try:
+            response = rq.urlopen(download_url)
+        except:
+            print('Something Wrong for Unknown Reason!')
+            sys.exit(1)
+        filename = response.headers['Content-Disposition'].split('=')[1]
+        data,itype = bar(response)
+        if itype == 'bytes':
+            with open(filename,'wb') as f:
+                f.write(data)
+        else:
+            with open(filename,'w') as f:
+                f.write(data)

@@ -69,7 +69,6 @@ def opt():
 
 def main():
     network, station, location, channel, begintime, endtime, outpath = opt()
-#    print(Timeseries('IU','ANMO','00','BHZ','2010-02-27T06:30:00','2010-02-27T10:30:00','miniseed')._format)
-    download = Timeseries(network, station, location, channel, begintime.strftime("%Y-%m-%dT%H:%M:%S"), endtime.strftime("%Y-%m-%dT%H:%M:%S"), 'miniseed').download()
+    download = Timeseries(network, station, location, channel, begintime.strftime("%Y-%m-%dT%H:%M:%S"), endtime.strftime("%Y-%m-%dT%H:%M:%S"), 'miniseed').download(outpath)
 if __name__ == '__main__':
     main()
