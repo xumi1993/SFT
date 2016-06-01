@@ -62,27 +62,56 @@ def bar(response, chunk_size=8192):
 
 
 class Stations:
-   '''
-   Based on URL Builder: station v.1
-   '''
+    '''
+    Based on URL Builder: station v.1
+    '''
 
-   url = 'http://service.iris.edu/fdsnws/station/1/'
+    url = 'http://service.iris.edu/fdsnws/station/1/'
 
-   def __init__(self, lalo_label, net_label, sta_label, loc_label, cha_label, dateb_label, datee_label, level_label):
-       self.urllink = ('%squery?%s%s%s%s%s%s%s%sformat=text' %(self.url, lalo_label,
-           net_label, sta_label, loc_label, cha_label,dateb_label, datee_label, level_label))
+    def __init__(self, lalo_label, net_label, sta_label, loc_label, cha_label,\
+            dateb_label, datee_label, level_label, comment_label):
+        self.comment_label = comment_label
+        self.level_label = level_label
+        self.urllink = ('%squery?%s%s%s%s%s%s%s%s%sformat=text' %(self.url, lalo_label,
+                net_label, sta_label, loc_label, cha_label,dateb_label, datee_label, level_label, comment_label))
 
-   def download(self):
-      try:
-         self.response = rq.urlopen(self.urllink)
-      except:
-         print('Something wrong for unknown reason!')
-         sys.exit(1)
+    def download(self):
+        try:
+            self.response = rq.urlopen(self.urllink)
+        except:
+            print('Something wrong for unknown reason!')
+            sys.exit(1)
 
-   def output(self):
-      html = self.response.read().decode()
-      print(html.strip())
+    def output(self):
+        self.html = self.response.read().decode().strip()
+        print(self.html)
 
+    def gmt_script(self):
+        with open("station.gmt", "w") as f:
+            f.write("#!/usr/bin/sh\n")
+            f.write("ps=stations.ps\n")
+            f.write("gmt pscoast -Rg -J0/10i -Bxa30g30 -Bya30g30 -Dl -A1000 -G200 -W0.4p -K > $ps\n")
+            f.write("gmt psxy -R -J -O -W0.2p -Gred3 -St0.08i >> $ps << eof\n")
+            if self.comment_label == "includecomments=false&":
+                lines = self.html.split("\n")
+            else:
+                lines = self.html.split("\n")[1:]
+            if self.level_label == '' or level_label == "level=station&":
+                idxlat = 2
+                idxlon = 3
+            elif self.level_label == "level=channel&":
+                idxlat = 4
+                idxlon = 5
+            else:
+                print("The level must be \"station\" (default) or \"channel\"")
+                return
+            for station in lines:
+                station = station.strip()
+                lat = station.split("|")[idxlat]
+                lon = station.split("|")[idxlon]
+                f.write("%s %s\n" % (lon, lat))
+            f.write("eof\n")
+                
 class Events:
    '''
    Based on 'URL Builder: event v.1'
@@ -183,7 +212,7 @@ class Response:
     Based on "resp v.1" and "sacpz v.1"
     """
 
-    def __init__(self, network, station, location, channel, istime, timeinfo, ispz):
+    def __init__(self, network, station, location, channel, timeinfo, ispz):
         self.network = network
         self.station = station
         self.channel = channel
@@ -193,13 +222,13 @@ class Response:
             self.url = 'http://service.iris.edu/irisws/sacpz/1/'
         else:
             self.url = 'http://service.iris.edu/irisws/resp/1/'
-        if istime == 1:
+        if len(timeinfo) == 2:
             self.urllink = ('%squery?net=%s&sta=%s&loc=%s&cha=%s&time=%s' % (self.url, network, station,
                 location, channel, timeinfo[0].strftime('%Y-%m-%dT%H:%M:%S')))
-        elif istime == 2:
+        elif len(timeinfo) == 1:
             self.urllink = ('%squery?net=%s&sta=%s&loc=%s&cha=%s&starttime=%s&endtime=%s' % (self.url, network, station, 
                 location, channel, timeinfo[0].strftime('%Y-%m-%dT%H:%M:%S'), timeinfo[0].strftime('%Y-%m-%dT%H:%M:%S')))
-        else:
+        elif timeinfo == []:
             self.urllink = ('%squery?net=%s&sta=%s&loc=%s&cha=%s' % (self.url, network, station, 
                 location, channel))
 

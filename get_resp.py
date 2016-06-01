@@ -2,28 +2,29 @@
 #
 # Fetch instrumental response file (sacpz or resp) based on IRIS-WS
 #
-# Author: Mijian Xu
+# Author: Mijian Xu @ Nanjing University
 # 
 # History: 2016-05-28 Init codes, Mijian Xu
-#
+#          2016-06-01 Fix options of datetime, Mijian Xu
+
 import re
 import sys
 import getopt
 from datetime import datetime
-from util import Response
+from util import Response, get_time
 
 def Usage():
-    print('get_resp')
+    print("Usage: get_resp -nNetwork -sStation [-location] [-cChannel]"
+          "[-bstart-time] [-eend-time] [-tTimestamp] [-Ooutpath] [-P] [-C]")
 
 def opt():
     location = "*"
     channel = "*"
-    istime = 0
     timeinfo = []
     ispz = False
     outpath = './'
     try:
-        opts,args = getopt.getopt(sys.argv[1:], "n:s:l:c:Y:O:P")
+        opts,args = getopt.getopt(sys.argv[1:], "n:s:l:c:b:e:t:O:P")
     except:
         print("Invalid arguments")
         Usage()
@@ -42,18 +43,12 @@ def opt():
             location = value
         elif op == "-c":
             channel = value
-        elif op == "-Y":
-            yrange_sp = value.split('/')
-            if len(yrange_sp) == 3:
-                istime = 1
-                timeinfo = [datetime.strptime(value, "%Y/%m/%d")]
-            elif len(yrange_sp) == 6:
-                istime = 2
-                timeinfo = [datetime.strptime("%s/%s/%s" % tuple(yrange_sp[0:3]), "%Y/%m/%d"),
-                        datetime.strptime("%s/%s/%s" % tuple(yrange_sp[3:6]), "%Y/%m/%d")]
-            else:
-                print("Invalid date format")
-                sys.exit(1)
+        elif op == "-b":
+            begintime = get_time(value)
+        elif op == "-e":
+            endtime = get_time(value)
+        elif op == "-t":
+            pointtime = get_time(value)
         elif op == "-P":
             ispz = True
         elif op == "-O":
@@ -61,13 +56,19 @@ def opt():
         else:
             print("Invalid arguments")
             sys.exit(1)
-
-
-    return network, station, location, channel, istime, timeinfo, ispz, outpath
+    if "-b" in op and "-e" in op:
+        timeinfo = [begintime, endtime]
+    elif "-t" in op:
+        timeinfo = [pointtime]
+    elif not ("-b" in op or "-e" in op or "-t" in op):
+        timeinfo = []
+    else:
+        print("Wrong option of datetime limitation")
+    return network, station, location, channel, timeinfo, ispz, outpath, comment
 
 def main():
-    network, station, location, channel, istime, timeinfo, ispz, outpath = opt()
-    resp = Response(network, station, location, channel, istime, timeinfo, ispz)
+    network, station, location, channel, timeinfo, ispz, outpath = opt()
+    resp = Response(network, station, location, channel, timeinfo, ispz)
     resp.download(outpath)
 
 if __name__ == '__main__':

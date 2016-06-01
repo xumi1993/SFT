@@ -13,17 +13,22 @@ except:
 
 def Usage():
     print("Usage: get_events.py [-b start-time] [-e end-time]"
-          "[-Rminlon/maxlon/minlat/maxlon] [-Dcenterlat/centerlon/minradius/maxradius] "
-          "[-nNetwork] [-sStation] [-lLocation] [-cChannel] [-Llevel]")
-    print("-b -- Limit to events occurring on or after the specified start time.")
-    print("-e -- Limit to events occurring on or before the specified end time.")
+          "[-Rminlon/maxlon/minlat/maxlon]\n\t [-Dcenterlat/centerlon/minradius/maxradius] "
+          "[-nNetwork] [-sStation]\n\t [-lLocation] [-cChannel] [-Llevel] [-C] [-G]")
+    print("-b -- Limit to events occurring on or after the specified start time.\n"
+            "\tDate and time format: YYYY-MM-DDThh:mm:ss (e.g., 1997-01-31T12:04:32)\n"
+            "\t                      YYYY-MM-DD (e.g., 1997-01-31)")
+    print("-e -- Limit to events occurring on or before the specified end time \n"\
+          "\twith the same date and time format as \"-b\".")
     print("-R -- BOX search terms (incompatible with radial search)")
     print("-D -- RADIAL search terms (incompatible with the box search)")
-    print("-n -- Specify network")
-    print("-s -- Specify station")
-    print("-l -- Spicify locations")
-    print("-c -- Specify channel")
+    print("-n -- Specify network code")
+    print("-s -- Specify station code")
+    print("-l -- Spicify locations code (Use \"--\" for \"Blank\" location).")
+    print("-c -- Specify channel code")
     print("-L -- Specify level of detail using 'network', 'station', 'channel' or 'response'")
+    print("-C -- If -C specified results should not include station and channel comments.")
+    print("-G -- Create a script to plot these stations on a global map (require GMT5.x).")
 
 def opt():
     lalo_label = ''
@@ -34,8 +39,10 @@ def opt():
     dateb_label = ''
     datee_label = ''
     level_label = ''
+    comment_label = ''
+    isgmt = False
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "R:D:b:e:c:n:s:l:L:")
+        opts, args = getopt.getopt(sys.argv[1:], "R:D:b:e:c:n:s:l:L:CG")
     except:
         print("Invalid arguments")
         Usage()
@@ -80,17 +87,26 @@ def opt():
         elif op == "-L":
             level = value.lower()
             level_label = 'level='+level+'&'
+        elif op == "-C":
+            comment_label = "includecomments=false&"
+        elif op == "-G":
+            isgmt = True
         else:
             print("Invalid arguments")
             sys.exit(1)
 
-    return lalo_label, net_label, sta_label, loc_label, cha_label, dateb_label, datee_label, level_label
+    return lalo_label, net_label, sta_label, loc_label, cha_label,\
+            dateb_label, datee_label, level_label, comment_label, isgmt
 
 def main():
-    lalo_label, net_label, sta_label, loc_label, cha_label, dateb_label, datee_label, level_label = opt()
-    stations = Stations(lalo_label, net_label, sta_label, loc_label, cha_label, dateb_label, datee_label, level_label)
+    lalo_label, net_label, sta_label, loc_label, cha_label,\
+            dateb_label, datee_label, level_label, comment_label, isgmt = opt()
+    stations = Stations(lalo_label, net_label, sta_label, loc_label, cha_label,\
+            dateb_label, datee_label, level_label, comment_label)
     stations.download()
     stations.output()
+    if isgmt:
+        stations.gmt_script()
 
 if __name__ == '__main__':
    main()
