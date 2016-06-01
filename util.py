@@ -10,42 +10,53 @@ import re
 import sys
 from os.path import join
 from progressive.bar import Bar
+from datetime import datetime
 try:
     import urllib.request as rq
 except:
     import urllib as rq
 
+def get_time(timestr):
+    if len(timestr.split("T")) == 1:
+        time = datetime.strptime(timestr, "%Y-%m-%d")
+    elif len(timestr.split("T")) == 2:
+        time = datetime.strptime(timestr, "%Y-%m-%dT%H:%M:%S")
+    else:
+        print("Wrong datetime options")
+        sys.exit(1)
+    return time
+
 def bar(response, chunk_size=8192):
-   if response.headers['Content-Length'] == None:
-      print("No response of server")
-      sys.exit(1)
-   total_size = response.headers['Content-Length'].strip()
-   total_size = int(total_size)
-   cycle = int(total_size/chunk_size)+1
-   bytes_so_far = 0
+    if response.headers['Content-Length'] == None:
+        print("No response of server")
+        sys.exit(1)
+    total_size = response.headers['Content-Length'].strip()
+    total_size = int(total_size)
+    cycle = int(total_size/chunk_size)+1
+    bytes_so_far = 0
 
-   MAX_VALUE = 100
+    MAX_VALUE = 100
 
-   bar = Bar(max_value=MAX_VALUE, num_rep="percentage", fallback=True)
+    bar = Bar(max_value=MAX_VALUE, num_rep="percentage", fallback=True)
     
-   bar.cursor.clear_lines(2)
-   bar.cursor.save()
-   for i in range(cycle):
-      chunk = response.read(chunk_size)
-      if i == 0:
-          if type(chunk) != str:
-              chunk_all = b''
-              itype = 'bytes'
-          else:
-              chunk_all = ''
-              itype = 'str'
-      bytes_so_far += len(chunk)
-      chunk_all += chunk
-      percentage = int(bytes_so_far*100/total_size)
-      bar.cursor.restore()
-      bar.draw(value=percentage)
-      print('%dbyte/%dbyte' %(bytes_so_far,total_size))
-   return chunk_all, itype
+    bar.cursor.clear_lines(2)
+    bar.cursor.save()
+    for i in range(cycle):
+        chunk = response.read(chunk_size)
+        if i == 0:
+            if type(chunk) != str:
+                chunk_all = b''
+                itype = 'bytes'
+            else:
+                chunk_all = ''
+                itype = 'str'
+        bytes_so_far += len(chunk)
+        chunk_all += chunk
+        percentage = int(bytes_so_far*100/total_size)
+        bar.cursor.restore()
+        bar.draw(value=percentage)
+        print('%dbyte/%dbyte' %(bytes_so_far,total_size))
+    return chunk_all, itype
 
 class Stations:
    '''

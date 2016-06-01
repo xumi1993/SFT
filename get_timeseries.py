@@ -9,14 +9,26 @@ Download timeseries data by 'URL Builder: timeseries v.1'
 """
 import sys
 import getopt
-from util import Timeseries
+from datetime import datetime
+from util import Timeseries, get_time
 
 def Usage():
-    print("get_timeseries")
+    print("get_timeseries -b start-time -e end-time -n network [-s station] [-l location]"
+          "[-c channel] [-O outpath]")
+    print("-b -- Specifies the desired start-time for data")
+    print("-e -- Specify the end-time for the data")
+    print("-n -- Select one or more network codes. Accepts wildcards and lists. "
+          "Can be SEED codes or data center defined codes.")
+    print("-s -- Select one or more SEED station codes. Accepts wildcards and lists.")
+    print("-l -- Select one or more SEED location identifier. Accepts wildcards and lists. "
+          "Use -- for \"Blank\" location IDs (ID’s containing 2 spaces).")
+    print("-c -- Select one or more SEED channel codes. Accepts wildcards and lists.")
+    print("-O -- Specify out path")
+    print("See http://service.iris.edu/fdsnws/dataselect/1/ for more details.")
 
 def opt():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "n:s:l:c:S:")
+        opts, args = getopt.getopt(sys.argv[1:], "n:s:l:c:O:b:e:")
     except:
         print("Invalid arguments")
         Usage()
@@ -26,20 +38,38 @@ def opt():
         Usage()
         sys.exit(1)
 
+    station = "*"
+    location = "*"
+    channel = "*"
+    outpath = "./"
     for op, value in opts:
         if op == "-n":
             network = value
         elif op == "-s":
             station = value
-
-    return network, station
-
+        elif op == "-l":
+            location = value
+        elif op == "-c":
+            channel = value
+        elif op == "-b":
+            begintime = get_time(value)
+        elif op == "-e":
+            endtime = get_time(value)
+        elif op == "-O":
+            outpath = value
+        else:
+            print("Invalid arguments")
+            Usage()
+            sys.exit(1)
+    try:
+        return network, station, location, channel, begintime, endtime, outpath
+    except:
+        print("The 'network', 'begintime', 'endtime' must be assumed")
+        sys.exit(1)
 
 def main():
-    network, station = opt()
+    network, station, location, channel, begintime, endtime, outpath = opt()
 #    print(Timeseries('IU','ANMO','00','BHZ','2010-02-27T06:30:00','2010-02-27T10:30:00','miniseed')._format)
-#     download = Timeseries('IU','ANMO','00','BHZ','2010-02-27T06:30:00','2010-02-27T10:30:00','miniseed').download()
-#    download = Timeseries('IU','ANMO','00','BHZ','2010-02-27T06:30:00','2010-02-27T10:40:00','miniseed').download()
-    print(station)
+    download = Timeseries(network, station, location, channel, begintime.strftime("%Y-%m-%dT%H:%M:%S"), endtime.strftime("%Y-%m-%dT%H:%M:%S"), 'miniseed').download()
 if __name__ == '__main__':
     main()
