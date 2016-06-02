@@ -25,7 +25,7 @@ def Usage():
     print("-A -- Specify if results should include information about time series data availability at the channel level. (False default)")
     print("-C -- If -C specified results should not include station and channel comments.")
     print("-D -- RADIAL search terms (incompatible with the box search)")
-    print("-G -- Create a script to plot these stations on a global map (require GMT5.x).")
+    print("-G -- Create a script to plot these stations on a global map (require GMT-5.x.x).")
     print("-L -- Specify level of detail using 'network', 'station', 'channel' or 'response'")
     print("-R -- BOX search terms (incompatible with radial search)")
     print("-S -- Do not display whether results should include information relating to restricted channels. (True default)")

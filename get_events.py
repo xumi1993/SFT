@@ -1,25 +1,37 @@
 #!/usr/bin/env python
+#
+# Fetch event (earthquake) information from the catalogs submitted to the IRIS DMC.
+#
+# Author: Mijian Xu, Tao Gou @ Nanjing University
+#
+# History: 2016-05-03, Init code, Mijian Xu
+#          2016-05-07, Create opt function, Tao Gou
+#          2016-06-02, Modify date and time options, Mijian Xu
+#
 
-import re
 import sys
 import getopt
-from util import Events
+from util import Events, get_time
+from datetime import datetime
 try:
     import urllib.request as rq
 except:
     import urllib as rq
 
 def Usage():
-    print("Usage: get_events.py -Yminyear/minmonth/minday/maxyear/maxmonth/maxday [-Rminlon/maxlon/minlat/maxlon] [-Dcenterlat/centerlon/minradius/maxradius] [-Hmindepth/maxdepth] [-Mminmag/maxmag[/magtype]] [-cCatalog] [-stime|mag]")
-    print("-Y -- Limit to events occurring between this range.")
-    print("-R -- BOX search terms (incompatible with radial search)")
+    print("Usage: get_events.py -Yminyear/minmonth/minday/maxyear/maxmonth/maxday [-Rminlon/maxlon/minlat/maxlon]\n"
+          "\t[-Dcenterlat/centerlon/minradius/maxradius] [-Hmindepth/maxdepth] [-Mminmag/maxmag[/magtype]] [-cCatalog] [-stime|mag]")
+    print("-C -- If -C specified results should not include station and channel comments.")
     print("-D -- RADIAL search terms (incompatible with the box search)")
     print("-H -- Limit to events with depth between this range.")
     print("-M -- Limit to events with magnitude between this range.\n\
             Specify magnitude type e.g., ML, Ms, mb, Mw")
+    print("-R -- BOX search terms (incompatible with radial search)")
+    print("-b -- Limit to events occurring on or after the specified start time.")
     print("-c -- Specify the catalog from which origins and magnitudes will be retrieved.\n\
             avaliable catalogs: ANF, GCMT, ISC, UoFW, NEIC")
-    print("-s -- Order results by time or magnitude, default in time.")
+    print("-e -- Limit to events occurring on or before the specified end time.")
+    print("-s -- Order results by \"time\" or \"magnitude\", (\"time\" is default).")
 
 def opt():
     lalo_label = ''
@@ -28,8 +40,9 @@ def opt():
     mag_label = ''
     sort_label = ''
     cata_label = ''
+    iscomment = True
     try:
-        opts,args = getopt.getopt(sys.argv[1:], "R:D:Y:c:H:M:s:")
+        opts, args = getopt.getopt(sys.argv[1:], "R:D:b:e:c:H:M:s:C")
     except:
         print("Invalid arguments")
         Usage()
@@ -37,6 +50,9 @@ def opt():
     if sys.argv[1:] == []:
         print("No argument is found")
         Usage()
+        sys.exit(1)
+    if not ("-b" in [op for op, value in opts] and "-e" in [op for op, value in opts]):
+        print("\"-b\" and \"-e\" must be specified.")
         sys.exit(1)
 
     for op, value in opts:
@@ -56,23 +72,10 @@ def opt():
             dep1 = value.strip("/")[0]
             dep2 = value.strip("/")[1]
             dep_label = 'mindepth='+dep1+'&maxdepth='+dep2+'&'
-        elif op == "-Y":
-            yrange_sp = value.split("/")
-            year1 = yrange_sp[0]
-            mon1 = yrange_sp[1]
-            day1 = yrange_sp[2]
-            year2 = yrange_sp[3]
-            mon2 = yrange_sp[4]
-            day2 = yrange_sp[5]
-            if len(mon1) == 1:
-                mon1 = '0'+mon1
-            if len(day1) == 1:
-                day1 = '0'+day1
-            if len(mon2) == 1:
-                mon2 = '0'+mon2
-            if len(day2) == 1:
-                day2 = '0'+day2
-            date_label = 'start='+year1+'-'+mon1+'-'+day1+'T00:00:00&end='+year2+'-'+mon2+'-'+day2+'T00:00:00'+'&'
+        elif op == "-b":
+            begintime = get_time(value)
+        elif op == "-e":
+            endtime = get_time(value)
         elif op == "-c":
             cata_label = 'catalog='+value+'&'
         elif op == "-M":
@@ -83,20 +86,27 @@ def opt():
             else:
                 mtype = value.split("/")[2]
                 mag_label = 'minmag='+mag1+'&maxmag='+mag2+'&magtype='+mtype+'&'
-        elif op == "-S":
+        elif op == "-s":
             if value.lower() == 'mag':
                 sort_label = 'orderby=magnitude'+'&'
-            else:
+            elif value.lower() == 'time':
                 sort_label = ''
+            else:
+                print("Wrong option of \"-s\"")
+                sys.exit(1)
+        elif op == "-C":
+            iscomment = False
         else:
             print("Invalid arguments")
             Usage()
             sys.exit(1)
-    return lalo_label, dep_label, mag_label, cata_label, date_label
+    date_label = "start="+begintime.strftime("%Y-%m-%dT%H:%M:%S")+\
+                 "&end="+endtime.strftime("%Y-%m-%dT%H:%M:%S")+"&"
+    return lalo_label, dep_label, mag_label, cata_label, date_label, sort_label, iscomment
 
 def main():
-    lalo_label, dep_label, mag_label, cata_label, date_label = opt()    
-    events = Events(lalo_label, dep_label, mag_label, cata_label, date_label)
+    lalo_label, dep_label, mag_label, cata_label, date_label, sort_label, iscomment = opt()
+    events = Events(lalo_label, dep_label, mag_label, cata_label, date_label, sort_label, iscomment)
     events.download()
     events.output()
 

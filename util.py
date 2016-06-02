@@ -115,30 +115,31 @@ class Stations:
             f.write("eof\n")
                 
 class Events:
-   '''
-   Based on 'URL Builder: event v.1'
-   '''
+    '''
+    Based on 'URL Builder: event v.1'
+    '''
 
-   url = 'http://service.iris.edu/fdsnws/event/1/'
+    url = 'http://service.iris.edu/fdsnws/event/1/'
 
-   def __init__(self, lalo_label, dep_label, mag_label, cata_label, date_label):
-       self.urllink = ('%squery?format=text&%s%s%s%s%s' %(self.url, lalo_label, 
-                         dep_label, mag_label, cata_label, date_label))[:-1]
+    def __init__(self, lalo_label, dep_label, mag_label, cata_label, date_label, sort_label, iscomment):
+        self.iscomment = iscomment
+        self.urllink = ('%squery?&%s%s%s%s%s%sformat=text' %(self.url, lalo_label,
+                         dep_label, mag_label, cata_label, date_label, sort_label))
 
-   def download(self):
-      try:
-         self.response = rq.urlopen(self.urllink)
-      except:
-         print('Something wrong for unknown reason!')
-         sys.exit(1)
+    def download(self):
+        try:
+            self.response = rq.urlopen(self.urllink)
+        except:
+            print('Something wrong for unknown reason!')
+            sys.exit(1)
 
-   def output(self):
-      evt_lst = self.response.readlines()
-      for evt in evt_lst:
-         evt = evt.decode().strip()
-         if evt[0] == '#':
-            continue
-         print(evt)
+    def output(self):
+        evt_lst = self.response.readlines()
+        for evt in evt_lst:
+            evt = evt.decode().strip()
+            if (not self.iscomment) and evt[0] == '#':
+                continue
+            print(evt)
 
 
 class Timeseries:
