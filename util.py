@@ -69,11 +69,12 @@ class Stations:
     url = 'http://service.iris.edu/fdsnws/station/1/'
 
     def __init__(self, lalo_label, net_label, sta_label, loc_label, cha_label,\
-            dateb_label, datee_label, level_label, comment_label):
-        self.comment_label = comment_label
+            dateb_label, datee_label, level_label, iscomment, restri_label, avalib_label):
+        self.iscomment = iscomment
         self.level_label = level_label
-        self.urllink = ('%squery?%s%s%s%s%s%s%s%s%sformat=text' %(self.url, lalo_label,
-                net_label, sta_label, loc_label, cha_label,dateb_label, datee_label, level_label, comment_label))
+        self.urllink = ('%squery?%s%s%s%s%s%s%s%s%s%sformat=text' %(self.url, lalo_label,
+                net_label, sta_label, loc_label, cha_label, dateb_label, datee_label,\
+                level_label, restri_label, avalib_label))
 
     def download(self):
         try:
@@ -84,7 +85,12 @@ class Stations:
 
     def output(self):
         self.html = self.response.read().decode().strip()
-        print(self.html)
+        self.lines = self.html.split("\n")[1:]
+        if self.iscomment:
+            print(self.html)
+        else:
+            for line in self.lines:
+                print(line)
 
     def gmt_script(self):
         with open("station.gmt", "w") as f:
@@ -92,11 +98,7 @@ class Stations:
             f.write("ps=stations.ps\n")
             f.write("gmt pscoast -Rg -J0/10i -Bxa30g30 -Bya30g30 -Dl -A1000 -G200 -W0.4p -K > $ps\n")
             f.write("gmt psxy -R -J -O -W0.2p -Gred3 -St0.08i >> $ps << eof\n")
-            if self.comment_label == "includecomments=false&":
-                lines = self.html.split("\n")
-            else:
-                lines = self.html.split("\n")[1:]
-            if self.level_label == '' or level_label == "level=station&":
+            if self.level_label == '' or self.level_label == "level=station&":
                 idxlat = 2
                 idxlon = 3
             elif self.level_label == "level=channel&":
@@ -105,7 +107,7 @@ class Stations:
             else:
                 print("The level must be \"station\" (default) or \"channel\"")
                 return
-            for station in lines:
+            for station in self.lines:
                 station = station.strip()
                 lat = station.split("|")[idxlat]
                 lon = station.split("|")[idxlon]
