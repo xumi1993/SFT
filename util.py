@@ -176,7 +176,6 @@ class Timeseries:
         filename = join(path, "%s.%s.%s.%s.%s.%s.mseed" % \
                 (self.network, self.station, self.location, self.channel, self.starttime, self.endtime))
 #        print("Downloading data to %s......" % filename)
-#        rq.urlretrieve(download_url, join(path, filename))
         try:
             response = rq.urlopen(download_url)
             #   print(response.getcode())
@@ -274,8 +273,8 @@ class Syngines:
         filename = response.headers['Content-Disposition'].split('=')[1]
         data,itype = bar(response)
         if itype == 'bytes':
-            with open(filename,'wb') as f:
+            with open(filename, 'wb') as f:
                 f.write(data)
         else:
-            with open(filename,'w') as f:
+            with open(filename, 'w') as f:
                 f.write(data)

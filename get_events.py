@@ -19,19 +19,19 @@ except:
     import urllib as rq
 
 def Usage():
-    print("Usage: get_events.py -Yminyear/minmonth/minday/maxyear/maxmonth/maxday [-Rminlon/maxlon/minlat/maxlon]\n"
+    print("Usage: get_events.py -bstart-time -eend-time [-Rminlon/maxlon/minlat/maxlon]\n"
           "\t[-Dcenterlat/centerlon/minradius/maxradius] [-Hmindepth/maxdepth] [-Mminmag/maxmag[/magtype]] [-cCatalog] [-stime|mag]")
-    print("-C -- If -C specified results should not include station and channel comments.")
-    print("-D -- RADIAL search terms (incompatible with the box search)")
-    print("-H -- Limit to events with depth between this range.")
-    print("-M -- Limit to events with magnitude between this range.\n\
-            Specify magnitude type e.g., ML, Ms, mb, Mw")
-    print("-R -- BOX search terms (incompatible with radial search)")
-    print("-b -- Limit to events occurring on or after the specified start time.")
-    print("-c -- Specify the catalog from which origins and magnitudes will be retrieved.\n\
-            avaliable catalogs: ANF, GCMT, ISC, UoFW, NEIC")
-    print("-e -- Limit to events occurring on or before the specified end time.")
-    print("-s -- Order results by \"time\" or \"magnitude\", (\"time\" is default).")
+    print("    -C If -C specified results should not include station and channel comments.")
+    print("    -D RADIAL search terms (incompatible with the box search)")
+    print("    -H Limit to events with depth between this range.")
+    print("    -M Limit to events with magnitude between this range.\n\
+                  Specify magnitude type e.g., ML, Ms, mb, Mw")
+    print("    -R BOX search terms (incompatible with radial search)")
+    print("    -b Limit to events occurring on or after the specified start time.")
+    print("    -c Specify the catalog from which origins and magnitudes will be retrieved.\n\
+                  avaliable catalogs: ANF   , GCMT, ISC, UoFW, NEIC")
+    print("    -e Limit to events occurring on or before the specified end time.")
+    print("    -s Order results by \"time\" or \"magnitude\", (\"time\" is default).")
 
 def opt():
     lalo_label = ''

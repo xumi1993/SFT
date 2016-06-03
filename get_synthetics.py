@@ -44,7 +44,7 @@ def Usage():
     print('        List of models: iasp91_2s, ak135f_5s, prem_a_5s, prem_a_10s, prem_a_20s.')
     print('   -F  Format of output.')
     print('     -F<value>')
-    print('        List of formats: ZIP archive of sac files(saczip), miniseed.')
+    print('        List of formats: \"saczip\" (ZIP archive of sac files), \"miniseed\".')
     print('   -O  Others.')
     print('     -O[l<label>][,c<components>][,u<units>][,s<sample_interval>][,k<kernel_width>][,a<amplitude_scale>]')
     print('       label: Specify a label to be included in file name and HTTP file name suggestions.')
@@ -62,17 +62,20 @@ def opt():
     source     = ''
     receiver   = ''
     data_range = ''
-    model      = ''
+    model      = 'iasp91_2s'
     format_out = ''
     misc_ops   = ''
     try:
-        opts,args = getopt.getopt(sys.argv[1:],"S:R:D:M:F:O:h",["help"])
+        opts, args = getopt.getopt(sys.argv[1:],"S:R:D:M:F:O:h",["help"])
     except:
         print("Invalid Argument.")
         Usage()
         sys.exit(1)
+    if sys.argv[1:] == []:
+        Usage()
+        sys.exit(1)
 
-    for op,value in opts:
+    for op, value in opts:
         if op == '-S':
             s_log = value[0].lower()
             if s_log == 'e':
@@ -83,7 +86,7 @@ def opt():
                 s_lat    = s_loc.split('/')[0]
                 s_lon    = s_loc.split('/')[1]
                 s_dep    = s_loc.split('/')[2]
-                mech      = value[1:].split(',')[2:]
+                mech     = value[1:].split(',')[2:]
                 origintime = 'origintime='+origin_t+'&'
                 source_loc = 'sourcelatitude='+s_lat+'&sourcelongitude='+s_lon+'&sourcedepthinmeters='+s_dep+'&'
                 if s_log == 'm' and len(mech) == 6:
@@ -160,34 +163,51 @@ def opt():
             dt = ''
             kernel_width = ''
             amplitude_scale = ''
-            for ss in value.split(','):
+            for ss in value[1:].split('+'):
                 if ss[0].lower() == 'l':
                     label = 'label='+ss[1:]+'&'
                 elif ss[0].lower() == 'c':
                     components = 'components='+ss[1:]+'&'
                 elif ss[0].lower() == 'u':
-                    unit_value = ss[1:].lower()
-                    if ('d','dis','displacement').count(unit_value):
+                    unit_value = ss[1:]
+                    if ('D', 'dis', 'displacement').count(unit_value):
                         units = 'units=displacement&'
-                    elif ('v','vel','velocity').count(unit_value):
+                    elif ('V', 'vel', 'velocity').count(unit_value):
                         units = 'units=velocity&'
-                    elif ('a','acceleration').count(unit_value):
+                    elif ('A', 'acc', 'acceleration').count(unit_value):
                         units = 'units=acceleration&'
                     else:
                         print("No Units: "+unit_value+'.The units are set to be velocity.')
                         units = 'units=velocity&'
                 elif ss[0].lower() == 's':
-                    sample_interval = ss[1:].lower()
-                    dt = 'dt='+sample_interval+'&'
+                    sample_interval = ss[1:]
+                    try:
+                        float(sample_interval)
+                    except:
+                        print("Sample interval must be in float")
+                        sys.exit(1)
+                    dt = 'dt=' + sample_interval + '&'
                 elif ss[0].lower() == 'k':
+                    try:
+                        int(ss[1:])
+                    except:
+                        print("Kernel width must be in integer")
+                        sys.exit(1)
                     kernel_width = 'kernelwidth='+ss[1:]+'&'
                 elif ss[0].lower() == 'a':
+                    try:
+                        float(ss[1:])
+                    except:
+                        print("Scale must be in float")
                     amplitude_scale = 'scale='+ss[1:]+'&'
+                else:
+                    print("Error parameters in \"-O\"")
+                    sys.exit(1)
             misc_ops = label+components+units+dt+kernel_width+amplitude_scale
-        elif op.lower() in ('-h','--help'):
+        elif op in ('-h', '--help'):
             Usage()
             sys.exit(1)
-    return source,receiver,data_range,model,format_out,misc_ops
+    return source, receiver, data_range, model, format_out, misc_ops
 
 def main():
     source,receiver,data_range,model,format_out,misc_ops = opt()
@@ -197,5 +217,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-#python get_synthetics.py -Sd2010-02-07T02:23:46,23.6/47/63000,1e22,1e22,1e22 -RnIU.ANMO -D1000 -Miasp91_2s -Fsaczip -Oltest,cZ,s0.2
