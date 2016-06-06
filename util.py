@@ -260,8 +260,9 @@ class Syngines:
 
     url = 'http://service.iris.edu/irisws/syngine/1/'
 
-    def __init__(self,source,receiver,data_range,model,format_out,misc_ops):
-        self.urllink = '%squery?%s%s%s%s%s%snodata=404' % (self.url,source,receiver,data_range,model,format_out,misc_ops)
+    def __init__(self,source,receiver,begintime, endtime,model,format_out,misc_ops):
+        self.urllink = '%squery?%s%s%s%s%s%s%snodata=404' % \
+                       (self.url, source, receiver, begintime, endtime,model,format_out, misc_ops)
 
     def download(self):
         download_url = self.urllink
@@ -271,7 +272,7 @@ class Syngines:
             print('Something Wrong for Unknown Reason!')
             sys.exit(1)
         filename = response.headers['Content-Disposition'].split('=')[1]
-        data,itype = bar(response)
+        data,itype = bar(response, filename=filename)
         if itype == 'bytes':
             with open(filename, 'wb') as f:
                 f.write(data)

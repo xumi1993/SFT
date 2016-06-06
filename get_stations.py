@@ -8,6 +8,7 @@
 #          2016-05-07, Create opt function, Tao Gou
 #          2016-05-30, Modify date and time options, Mijian Xu
 #          2016-06-02, Add options of -C -G -S -A, Mijian Xu
+#          2016-06-06, Add output option, Mijian Xu
 #
 
 import sys
@@ -19,25 +20,37 @@ except:
     import urllib as rq
 
 def Usage():
-    print("Usage: get_events.py [-b start-time] [-e end-time]"
-          "[-Rminlon/maxlon/minlat/maxlon]\n\t [-Dcenterlat/centerlon/minradius/maxradius] "
-          "[-nNetwork] [-sStation]\n\t [-lLocation] [-cChannel] [-Llevel] [-C] [-G] [-S] [-A]")
-    print("-A -- Specify if results should include information about time series data availability at the channel level. (False default)")
-    print("-C -- If -C specified results should not include station and channel comments.")
-    print("-D -- RADIAL search terms (incompatible with the box search)")
-    print("-G -- Create a script to plot these stations on a global map (require GMT-5.x.x).")
-    print("-L -- Specify level of detail using 'network', 'station', 'channel' or 'response'")
-    print("-R -- BOX search terms (incompatible with radial search)")
-    print("-S -- Do not display whether results should include information relating to restricted channels. (True default)")
-    print("-b -- Limit to events occurring on or after the specified start time.\n"
-            "\tDate and time format: YYYY-MM-DDThh:mm:ss (e.g., 1997-01-31T12:04:32)\n"
-            "\t                      YYYY-MM-DD (e.g., 1997-01-31)")
-    print("-c -- Specify channel code")
-    print("-e -- Limit to events occurring on or before the specified end time \n"\
-          "\twith the same date and time format as \"-b\".")
-    print("-l -- Spicify locations code (Use \"--\" for \"Blank\" location).")
-    print("-n -- Specify network code")
-    print("-s -- Specify station code")
+    print("Usage: get_events.py [-b<start-time>] [-e<end-time>]"
+          "[-R<minlon>/<maxlon>/<minlat>/<maxlon>]\n\t [-D<centerlat>/<centerlon>/<minradius>/<maxradius>] "
+          "[-n<Network>] [-s<Station>]\n\t [-l<Location>] [-c<Channel>] [-O[+a][+c][+g][+l<level>][+s]]")
+    print("    -D RADIAL search terms (incompatible with the box search)")
+    print("       -D<centerlat>/<centerlon>/<minradius>/<maxradius>")
+    print("         \"centerlat\" & \"centerlon\" are latitude and longitude of a center point\n"
+          "         \"minradius\" & \"maxradius\" are distance range from the center point in degree")
+    print("    -O Output parameters")
+    print("       -O[+a][+c][+g][+l<level>][+s]")
+    print("          +a Specify if results should include information about time series data availability at the channel level. (False default)")
+    print("          +c If -C specified results should not include station and channel comments.")
+    print("          +g Create a script to plot these stations on a global map (require GMT-5.x.x).")
+    print("          +l<level> Specify level of detail using 'network', 'station', 'channel' or 'response'")
+    print("          +s Do not display whether results should include information relating to restricted channels. (True default)")
+    print("    -R BOX search terms (incompatible with radial search)"
+          "       -R<minlon>/<maxlon>/<minlat>/<maxlon>")
+    print("    -b Limit to events occurring on or after the specified start time.\n"
+          "       -b<start-time>\n"
+          "          Date and time format: YYYY-MM-DDThh:mm:ss (e.g., 1997-01-31T12:04:32)\n"
+          "                              YYYY-MM-DD (e.g., 1997-01-31)")
+    print("     -c Specify channel code. Accepts wildcards and lists.\n"
+          "        -c<channel>")
+    print("     -e Limit to events occurring on or before the specified end time \n"
+          "        -e<end-time>\n"
+          "           with the same date and time format as \"-b\".")
+    print("     -l Spicify locations code (Use \"--\" for \"Blank\" location). Accepts wildcards and lists.\n"
+          "        -l<location>")
+    print("     -n Specify network code. Accepts wildcards and lists.\n"
+          "        -n<network>")
+    print("     -s Specify station code. Accepts wildcards and lists.\n"
+          "        -s<station>")
 
 def opt():
     lalo_label = ''
@@ -52,8 +65,9 @@ def opt():
     avalib_label = ''
     isgmt = False
     iscomment = True
+    level_lst = ['network', 'station', 'channel', 'response']
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "R:D:b:e:c:n:s:l:L:CSAG")
+        opts, args = getopt.getopt(sys.argv[1:], "R:D:b:e:c:n:s:l:O:")
     except:
         print("Invalid arguments")
         Usage()
@@ -95,17 +109,26 @@ def opt():
         elif op == "-e":
             endtime = get_time(value)
             datee_label = 'end='+endtime.strftime("%Y-%m-%dT%H:%M:%S")+'&'
-        elif op == "-L":
-            level = value.lower()
-            level_label = 'level='+level+'&'
-        elif op == "-C":
-            iscomment = False
-        elif op == "-S":
-            restri_label = "includerestricted=false&"
-        elif op == "-A":
-            avalib_label = "includeavailability=true&"
-        elif op == "-G":
-            isgmt = True
+        elif op == "-O":
+            for sub_op in value.split("+")[1:]:
+                if sub_op[0] == "l":
+                    level = sub_op[1:].lower()
+                    if level in level_lst:
+                        level_label = 'level=' + level + '&'
+                    else:
+                        print("The level label must be in 'network', 'station', 'channel' or 'response'")
+                        sys.exit(1)
+                elif sub_op[0] == "c":
+                    iscomment = False
+                elif sub_op[0] == "s":
+                    restri_label = "includerestricted=false&"
+                elif sub_op[0] == "a":
+                    avalib_label = "includeavailability=true&"
+                elif sub_op[0] == "g":
+                    isgmt = True
+                else:
+                    print("Invalid arguments in \"-O\"")
+                    sys.exit(1)
         else:
             print("Invalid arguments")
             sys.exit(1)

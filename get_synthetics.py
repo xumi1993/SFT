@@ -8,9 +8,9 @@ import getopt
 from util import Syngines
 
 def Usage():
-    print('Usage: get_synthetics.py -Ssourc_options -Rreceiver_options -Ddata_range_options -Mmodel -Fformat -Oothers')
+    print('Usage: get_synthetics.py -Ssourc_options -Rreceiver_options -Ddata_range_options [-Mmodel] [-F<format>] -Ooutpara')
     print('   -S  Source options.')
-    print('     -Se<eventid> (Use eventID to define an event)')
+    print('     -Se<eventid> (Use eventID to define an event, The only catalog currently supported is Global CMT.)')
     print('     -Sm<origin_time,source_latitude/source_longitude/source_depth,moment_tensor>')
     print('     -Sd<origin_time,source_latitude/source_longitude/source_depth,double_couple>')
     print('     -Sf<origin_time,source_latitude/source_longitude/source_depth,force>')
@@ -41,12 +41,12 @@ def Usage():
     print('        for start time,and from start time for end time. And the end time should be positive.')
     print('   -M  Model.')
     print('     -M<model_name>')
-    print('        List of models: iasp91_2s, ak135f_5s, prem_a_5s, prem_a_10s, prem_a_20s.')
+    print('        List of models: iasp91_2s (default), ak135f_5s, prem_a_5s, prem_a_10s, prem_a_20s.')
     print('   -F  Format of output.')
     print('     -F<value>')
-    print('        List of formats: \"saczip\" (ZIP archive of sac files), \"miniseed\".')
-    print('   -O  Others.')
-    print('     -O[l<label>][,c<components>][,u<units>][,s<sample_interval>][,k<kernel_width>][,a<amplitude_scale>]')
+    print('        List of formats: \"saczip\" (ZIP archive of sac files, default), \"miniseed\".')
+    print('   -O  Output parameters.')
+    print('     -O[+l<label>][+c<components>][+u<units>][+s<sample_interval>][+k<kernel_width>][+a<amplitude_scale>]')
     print('       label: Specify a label to be included in file name and HTTP file name suggestions.')
     print('       components: Specify the orientation of the synthetic seismograms as a list of any combination of:')
     print('          Z(vertical),N(north),E(east),R(radial),T(transverse).')
@@ -61,9 +61,10 @@ def Usage():
 def opt():
     source     = ''
     receiver   = ''
-    data_range = ''
+    begintime  = ''
+    endtime    = ''
     model      = 'iasp91_2s'
-    format_out = ''
+    format_out = 'format=saczip&'
     misc_ops   = ''
     try:
         opts, args = getopt.getopt(sys.argv[1:],"S:R:D:M:F:O:h",["help"])
@@ -86,7 +87,7 @@ def opt():
                 s_lat    = s_loc.split('/')[0]
                 s_lon    = s_loc.split('/')[1]
                 s_dep    = s_loc.split('/')[2]
-                mech     = value[1:].split(',')[2:]
+                mech     = value[1:].split(',')[2].split('/')
                 origintime = 'origintime='+origin_t+'&'
                 source_loc = 'sourcelatitude='+s_lat+'&sourcelongitude='+s_lon+'&sourcedepthinmeters='+s_dep+'&'
                 if s_log == 'm' and len(mech) == 6:
@@ -121,24 +122,19 @@ def opt():
                     receiver = 'network='+network+'&station='+station+'&'
                 else:
                     print("Error in RECEIVER OPTIONS!")
-#                    Usage()
                     sys.exit(1)
             else:
                 print("Error in RECEIVER OPTIONS!")
-#                Usage()
                 sys.exit(1)
         elif op == '-D':
             se = value.split('/')
             if len(se) == 1:
-                endtime = se[0].replace('+','%2B')
-                data_range = 'endtime='+endtime+'&'
+                endtime = 'endtime=' + se[0] + '&'
             elif len(se) == 2:
-                starttime = se[0].replace('+','%2B')
-                endtime = se[1].replace('+','%2B')
-                data_range = 'starttime='+starttime+'&endtime='+endtime+'&'
+                begintime = 'starttime=' + se[0] + '&'
+                endtime = 'endtime=' + se[1] + '&'
             else:
                 print("Error in DATA RANGE OPTIONS!")
-#                Usage()
                 sys.exit(1)
         elif op == '-M':
             mod = value.lower()
@@ -163,7 +159,7 @@ def opt():
             dt = ''
             kernel_width = ''
             amplitude_scale = ''
-            for ss in value[1:].split('+'):
+            for ss in value.split('+')[1:]:
                 if ss[0].lower() == 'l':
                     label = 'label='+ss[1:]+'&'
                 elif ss[0].lower() == 'c':
@@ -207,11 +203,11 @@ def opt():
         elif op in ('-h', '--help'):
             Usage()
             sys.exit(1)
-    return source, receiver, data_range, model, format_out, misc_ops
+    return source, receiver, begintime, endtime, model, format_out, misc_ops
 
 def main():
-    source,receiver,data_range,model,format_out,misc_ops = opt()
-    synthetics = Syngines(source,receiver,data_range,model,format_out,misc_ops)
+    source, receiver, begintime, endtime, model, format_out, misc_ops = opt()
+    synthetics = Syngines(source, receiver, begintime, endtime, model, format_out, misc_ops)
 #    synthetics = Syngines('Source Options','Receiver Options','Data Range Options','Model','Format','Misc Options').download()
     synthetics.download()
 

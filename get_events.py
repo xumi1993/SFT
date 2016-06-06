@@ -19,19 +19,22 @@ except:
     import urllib as rq
 
 def Usage():
-    print("Usage: get_events.py -bstart-time -eend-time [-Rminlon/maxlon/minlat/maxlon]\n"
-          "\t[-Dcenterlat/centerlon/minradius/maxradius] [-Hmindepth/maxdepth] [-Mminmag/maxmag[/magtype]] [-cCatalog] [-stime|mag]")
-    print("    -C If -C specified results should not include station and channel comments.")
+    print("Usage: get_events.py -b<start-time> -e<end-time> [-R<minlon>/<maxlon>/<minlat>/<maxlon>]\n"
+          "\t[-D<centerlat>/<centerlon>/<minradius>/<maxradius>] [-H<mindepth>/<maxdepth>]\n"
+          "\t [-M<minmag>/<maxmag>[/<magtype>]] [-c<Catalog>] [-O[+c][+s<time>|<mag>]]")
     print("    -D RADIAL search terms (incompatible with the box search)")
     print("    -H Limit to events with depth between this range.")
-    print("    -M Limit to events with magnitude between this range.\n\
-                  Specify magnitude type e.g., ML, Ms, mb, Mw")
+    print("    -M Limit to events with magnitude between this range.\n"
+          "       Specify magnitude type e.g., ML, Ms, mb, Mw")
+    print("    -O Output parameters\n"
+          "       -O[+c][+s<time>|<mag>]"
+          "         +c If -c specified results should not include station and channel comments.\n"
+          "         +s Order results by \"time\" or \"magnitude\", (\"time\" is default).")
     print("    -R BOX search terms (incompatible with radial search)")
     print("    -b Limit to events occurring on or after the specified start time.")
-    print("    -c Specify the catalog from which origins and magnitudes will be retrieved.\n\
-                  avaliable catalogs: ANF   , GCMT, ISC, UoFW, NEIC")
+    print("    -c Specify the catalog from which origins and magnitudes will be retrieved.\n"
+          "       avaliable catalogs: ANF, GCMT, ISC, UoFW, NEIC")
     print("    -e Limit to events occurring on or before the specified end time.")
-    print("    -s Order results by \"time\" or \"magnitude\", (\"time\" is default).")
 
 def opt():
     lalo_label = ''
@@ -42,7 +45,7 @@ def opt():
     cata_label = ''
     iscomment = True
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "R:D:b:e:c:H:M:s:C")
+        opts, args = getopt.getopt(sys.argv[1:], "R:D:b:e:c:H:M:O:")
     except:
         print("Invalid arguments")
         Usage()
@@ -86,16 +89,21 @@ def opt():
             else:
                 mtype = value.split("/")[2]
                 mag_label = 'minmag='+mag1+'&maxmag='+mag2+'&magtype='+mtype+'&'
-        elif op == "-s":
-            if value.lower() == 'mag':
-                sort_label = 'orderby=magnitude'+'&'
-            elif value.lower() == 'time':
-                sort_label = ''
-            else:
-                print("Wrong option of \"-s\"")
-                sys.exit(1)
-        elif op == "-C":
-            iscomment = False
+        elif op == "-O":
+            for sub_op in value.split("+"):
+                if sub_op[0] == "s":
+                    if value.lower() == 'mag':
+                        sort_label = 'orderby=magnitude' + '&'
+                    elif value.lower() == 'time':
+                        sort_label = ''
+                    else:
+                        print("Wrong option of \"-s\"")
+                        sys.exit(1)
+                elif sub_op[0] == "c":
+                    iscomment = False
+                else:
+                    print("Invalid arguments in \"-O\"")
+                    sys.exit(1)
         else:
             print("Invalid arguments")
             Usage()

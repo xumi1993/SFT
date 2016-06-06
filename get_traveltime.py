@@ -4,6 +4,7 @@
 # Author: Mijian Xu, Haibo Wang
 #
 # History: 2016-05-27 Init Code, Haibo Wang
+#          2016-06-06 Add output option, Mijian Xu
 #
 
 """
@@ -25,7 +26,7 @@ def Usage():
     print('    -O Output parameters.')
     print('        +c Suppresses header from the resulting table.')
     print('        +m only retrieve the first arrival of each phase for each distance.')
-    print('        +aT|R returns a space–separated list of travel times in seconds (\"T\").\n'
+    print('        +a<T|R> returns a space–separated list of travel times in seconds (\"T\").\n'
           '              or return a space-separated list of ray parameters in sec/deg (\"R\").')
     print('    -h or --help  For help.')
 
