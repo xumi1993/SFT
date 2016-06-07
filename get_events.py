@@ -90,7 +90,7 @@ def opt():
                 mtype = value.split("/")[2]
                 mag_label = 'minmag='+mag1+'&maxmag='+mag2+'&magtype='+mtype+'&'
         elif op == "-O":
-            for sub_op in value.split("+"):
+            for sub_op in value.split("+")[1:]:
                 if sub_op[0] == "s":
                     if value.lower() == 'mag':
                         sort_label = 'orderby=magnitude' + '&'
