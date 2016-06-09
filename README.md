@@ -4,6 +4,17 @@ Seismic fetch tools based on IRIS Web Services
 ## Dependencies
 * Python 2.7.x or Python 3.x.x
 
+## Download
+```
+git clone https://github.com/xumi1993/SFT.git
+```
+
+## Update
+```
+cd /path/to/SFT
+git pull
+```
+
 ## Inclusion
 * get_events.py: Fetch catalog from GCMT, NEIC or ISC
 * get_station.py: List of stations in metadata
