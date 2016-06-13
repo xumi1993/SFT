@@ -75,12 +75,12 @@ class Stations:
 
     url = 'http://service.iris.edu/fdsnws/station/1/'
 
-    def __init__(self, lalo_label, net_label, sta_label, loc_label, cha_label,\
-            dateb_label, datee_label, level_label, iscomment, restri_label, avalib_label):
+    def __init__(self, lalo_label, net_label, sta_label, loc_label, cha_label,
+                 date_label, level_label, iscomment, restri_label, avalib_label):
         self.iscomment = iscomment
         self.level_label = level_label
-        self.urllink = ('%squery?%s%s%s%s%s%s%s%s%s%sformat=text' %(self.url, lalo_label,
-                net_label, sta_label, loc_label, cha_label, dateb_label, datee_label,\
+        self.urllink = ('%squery?%s%s%s%s%s%s%s%s%sformat=text' %(self.url, lalo_label,
+                net_label, sta_label, loc_label, cha_label, date_label,
                 level_label, restri_label, avalib_label))
 
     def download(self):
@@ -89,15 +89,15 @@ class Stations:
         except:
             print('Something wrong for unknown reason!')
             sys.exit(1)
+        if self.iscomment:
+            self.out_station = self.response.readlines()
+        else:
+            self.out_station = self.response.readlines()[1:]
 
     def output(self):
-        self.html = self.response.read().decode().strip()
-        self.lines = self.html.split("\n")[1:]
-        if self.iscomment:
-            print(self.html)
-        else:
-            for line in self.lines:
-                print(line)
+        for sta in self.out_station:
+            print(sta.decode().strip())
+
 
     def gmt_script(self):
         with open("station.gmt", "w") as f:
@@ -139,13 +139,14 @@ class Events:
         except:
             print('Something wrong for unknown reason!')
             sys.exit(1)
+        if self.iscomment:
+            self.out_events = self.response.readlines()
+        else:
+            self.out_events = self.response.readlines()[1:]
 
     def output(self):
-        evt_lst = self.response.readlines()
-        for evt in evt_lst:
+        for evt in self.out_events:
             evt = evt.decode().strip()
-            if (not self.iscomment) and evt[0] == '#':
-                continue
             print(evt)
 
 
@@ -158,7 +159,7 @@ class Timeseries:
 #    url = 'http://service.iris.edu/irisws/timeseries/1/'
     url = 'http://service.iris.edu/fdsnws/dataselect/1/'
     
-    def __init__(self, network, station, location, channel, starttime, endtime, output):
+    def __init__(self, network, station, location, channel, starttime, endtime):
         self.network = network
         self.station = station
         self.channel = channel
@@ -172,7 +173,6 @@ class Timeseries:
 
     def download(self, path):
         download_url = self.urllink
-        print(download_url)
         filename = join(path, "%s.%s.%s.%s.%s.%s.mseed" % \
                 (self.network, self.station, self.location, self.channel, self.starttime, self.endtime))
 #        print("Downloading data to %s......" % filename)
@@ -204,14 +204,16 @@ class Traveltime:
         self.urllink = ('%squery?%s%s%s%s%s' % (self.url, model_label, phases_label,
                                                 evdp_label, out_label, dist_label))
 
-    def output(self):
+    def download(self):
         try:
             self.response = rq.urlopen(self.urllink)
         except:
             print("Something wrong for unknown reason!")
             sys.exit(1)
-        phs = self.response.read().decode()
-        print(phs)
+        self.phs = self.response.read().decode()
+
+    def output(self):
+        print(self.phs)
 
 class Response:
     """

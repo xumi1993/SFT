@@ -12,7 +12,6 @@
 import sys
 import getopt
 from util import Events, get_time
-from datetime import datetime
 try:
     import urllib.request as rq
 except:
@@ -31,15 +30,17 @@ def Usage():
           "         +c If -c specified results should not include station and channel comments.\n"
           "         +s Order results by \"time\" or \"magnitude\", (\"time\" is default).")
     print("    -R BOX search terms (incompatible with radial search)")
-    print("    -b Limit to events occurring on or after the specified start time.")
+    print("    -b Limit to events occurring on or after the specified start time.\n"
+          "       Date and time format: YYYY-MM-DDThh:mm:ss (e.g., 1997-01-31T12:04:32)\n"
+          "                             YYYY-MM-DD (e.g., 1997-01-31)")
     print("    -c Specify the catalog from which origins and magnitudes will be retrieved.\n"
           "       avaliable catalogs: ANF, GCMT, ISC, UoFW, NEIC")
-    print("    -e Limit to events occurring on or before the specified end time.")
+    print("    -e Limit to events occurring on or before the specified end time\n"
+          "       with the same date and time format as \"-b\".")
 
 def opt():
     lalo_label = ''
     dep_label = ''
-    date_label = ''
     mag_label = ''
     sort_label = ''
     cata_label = ''

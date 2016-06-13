@@ -112,6 +112,7 @@ def opt():
 def main():
     model_label, phases_label, evdp_label, out_label, dist_label = opt()
     travetimes = Traveltime(model_label, phases_label, evdp_label, out_label, dist_label)
+    travetimes.download()
     travetimes.output()
 
 if __name__ == '__main__':

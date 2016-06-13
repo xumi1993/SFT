@@ -32,7 +32,7 @@ def Usage():
     print("          +a Specify if results should include information about time series data availability at the channel level. (False default)")
     print("          +c If -C specified results should not include station and channel comments.")
     print("          +g Create a script to plot these stations on a global map (require GMT-5.x.x).")
-    print("          +l<level> Specify level of detail using 'network', 'station', 'channel' or 'response'")
+    print("          +l<level> Specify level of detail using 'network', 'station' (default), 'channel' or 'response'")
     print("          +s Do not display whether results should include information relating to restricted channels. (True default)")
     print("    -R BOX search terms (incompatible with radial search)"
           "       -R<minlon>/<maxlon>/<minlat>/<maxlon>")
@@ -132,17 +132,17 @@ def opt():
         else:
             print("Invalid arguments")
             sys.exit(1)
-
-    return lalo_label, net_label, sta_label, loc_label, cha_label,\
-            dateb_label, datee_label, level_label, iscomment, isgmt, \
+    date_label = dateb_label+datee_label
+    return lalo_label, net_label, sta_label, loc_label, cha_label, \
+            date_label, level_label, iscomment, isgmt, \
             restri_label, avalib_label
 
 def main():
-    lalo_label, net_label, sta_label, loc_label, cha_label,\
-            dateb_label, datee_label, level_label, \
-            iscomment, isgmt, restri_label, avalib_label = opt()
-    stations = Stations(lalo_label, net_label, sta_label, loc_label, cha_label,\
-            dateb_label, datee_label, level_label, iscomment, restri_label, avalib_label)
+    lalo_label, net_label, sta_label, loc_label, cha_label, \
+    date_label, level_label, \
+    iscomment, isgmt, restri_label, avalib_label = opt()
+    stations = Stations(lalo_label, net_label, sta_label, loc_label, cha_label,
+                  date_label, level_label, iscomment, restri_label, avalib_label)
     stations.download()
     stations.output()
     if isgmt:
