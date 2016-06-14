@@ -34,18 +34,23 @@ def opt():
     istimeb = False
     istimee = False
     islist = False
+    isoutsta = False
     try:
         opts, args = getopt.getopt(sys.argv[1:], "R:D:b:e:C:H:M:P:n:s:l:c:S:o:")
     except:
         print("Invalid arguments")
         Usage()
         sys.exit(1)
-    if sys.argv[1:] == []:
+    if not sys.argv[1:]:
         print("No argument is found")
         Usage()
         sys.exit(1)
-    if not ("-b" in [op for op, value in opts] and "-e" in [op for op, value in opts]):
+    ops = [op for op, value in opts]
+    if not ("-b" in ops and "-e" in ops):
         print("\"-b\" and \"-e\" must be specified.")
+        sys.exit(1)
+    if "-n" in ops and "-S" in ops:
+        print("-n is incompatible with specified station list")
         sys.exit(1)
 
     for op, value in opts:
@@ -104,9 +109,19 @@ def opt():
             channel = value
         elif op == "-S":
             islist = True
-            if isfile(value):
-                with open(value, 'r') as f:
+            sub_op = value.split("+")
+            if len(sub_op) != 1 and len(sub_op) != 2:
+                print("Error options in -S")
+                sys.exit(1)
+            if isfile(sub_op[0]):
+                with open(sub_op[0], 'r') as f:
                     stalist = f.readlines()
+            else:
+                print("No such list file")
+                sys.exit(1)
+            if len(sub_op) == 2:
+                if sub_op[1] == "s":
+                    isoutsta = True
         elif op == "-o":
             outpath = value
             if not isdir(outpath):
@@ -116,11 +131,11 @@ def opt():
             Usage()
             sys.exit(1)
     return lalo_label, dep_label, begintime, endtime, cata_label, mag_label, phase_begin, phase_end, istimeb, istimee, \
-            network, station, location, channel, stalist, islist, outpath
+            network, station, location, channel, stalist, islist, outpath, isoutsta
 
 def main():
     lalo_label, dep_label, begintime, endtime, cata_label, mag_label, phase_begin, phase_end, istimeb, istimee, \
-    network, station, location, channel, stalist, islist, path = opt()
+    network, station, location, channel, stalist, islist, path, isoutsta = opt()
     if (not islist) and (istimeb or istimee):
         print("Cannot specify time range by phases when station info was specified in command line")
         sys.exit(1)
@@ -140,9 +155,10 @@ def main():
         evdp = float(evt.decode().split('|')[4])
         evmagtp = evt.decode().split('|')[9]
         evmag = evt.decode().split('|')[10]
-        outpath = join(path, "evt.%s.%s%s" % (origin_time.strftime("%Y%m%d"), evmagtp, evmag))
-        if not exists(outpath):
-            makedirs(outpath)
+        if not isoutsta:
+            outpath = join(path, "evt.%s.%s%s" % (origin_time.strftime("%Y%m%d"), evmagtp, evmag))
+            if not exists(outpath):
+                makedirs(outpath)
         if islist:
             for sta in stalist:
                 sta = sta.strip()
@@ -152,6 +168,10 @@ def main():
                 stainfo.download()
                 stla = stainfo.out_station[0].decode().strip().split('|')[2]
                 stlo = stainfo.out_station[0].decode().strip().split('|')[3]
+                if isoutsta:
+                    outpath = join(path, sta.split()[0]+'.'+sta.split()[1])
+                    if not exists(outpath):
+                        makedirs(outpath)
                 if istimeb:
                     evt_begin = origin_time + timedelta(seconds=phase_begin[0])
                 else:
