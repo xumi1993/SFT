@@ -33,8 +33,6 @@ def opt():
         print("No argument is found")
         Usage()
         sys.exit(1)
-    ops = [op for op, value in opts]
-    if
     
     for op, value in opts:
         if op == "-n":
