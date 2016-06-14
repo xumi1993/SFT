@@ -12,7 +12,7 @@ from os.path import isfile, realpath, dirname, isdir, join, exists
 from os import makedirs
 sys.path.append(dirname(dirname(realpath(__file__))))
 from util import Events, get_time, Stations, Traveltime, Timeseries
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 
 def Usage():

@@ -6,16 +6,16 @@
 # 
 # History: 2016-05-28 Init codes, Mijian Xu
 #          2016-06-01 Fix options of datetime, Mijian Xu
+#          2016-06-14 Add usage, Mijian Xu
 
 import re
 import sys
 import getopt
-from datetime import datetime
 from util import Response, get_time
 
 def Usage():
-    print("Usage: get_resp -nNetwork -sStation [-location] [-cChannel]"
-          "[-bstart-time] [-eend-time] [-tTimestamp] [-Ooutpath] [-P] [-C]")
+    print("Usage: get_resp -n<Network> -s<Station> [-l<Location>] [-c<Channel>]\n"
+          "      [-b<start-time>] [-e<end-time>] [-t<Timestamp>] [-o<Outpath>] [-P]")
 
 def opt():
     location = "*"
@@ -24,15 +24,17 @@ def opt():
     ispz = False
     outpath = './'
     try:
-        opts,args = getopt.getopt(sys.argv[1:], "n:s:l:c:b:e:t:O:P")
+        opts, args = getopt.getopt(sys.argv[1:], "n:s:l:c:b:e:t:o:P")
     except:
         print("Invalid arguments")
         Usage()
         sys.exit(1)
-    if sys.argv[1:] == []:
+    if not sys.argv[1:]:
         print("No argument is found")
         Usage()
         sys.exit(1)
+    ops = [op for op, value in opts]
+    if
     
     for op, value in opts:
         if op == "-n":
@@ -51,7 +53,7 @@ def opt():
             pointtime = get_time(value)
         elif op == "-P":
             ispz = True
-        elif op == "-O":
+        elif op == "-o":
             outpath = value
         else:
             print("Invalid arguments")
@@ -64,7 +66,7 @@ def opt():
         timeinfo = []
     else:
         print("Wrong option of datetime limitation")
-    return network, station, location, channel, timeinfo, ispz, outpath, comment
+    return network, station, location, channel, timeinfo, ispz, outpath
 
 def main():
     network, station, location, channel, timeinfo, ispz, outpath = opt()
