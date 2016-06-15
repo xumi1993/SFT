@@ -11,7 +11,7 @@ import getopt
 from os.path import isfile, realpath, dirname, isdir, join, exists
 from os import makedirs
 sys.path.append(dirname(dirname(realpath(__file__))))
-from util import Events, get_time, Stations, Traveltime, Timeseries
+from util import Events, get_time, Stations, Traveltime, Timeseries, Response
 from datetime import timedelta
 
 
@@ -35,8 +35,9 @@ def opt():
     istimee = False
     islist = False
     isoutsta = False
+    isresp = 0
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "R:D:b:e:C:H:M:P:n:s:l:c:S:o:")
+        opts, args = getopt.getopt(sys.argv[1:], "R:D:b:e:C:H:M:P:n:s:l:c:S:o:r:")
     except:
         print("Invalid arguments")
         Usage()
@@ -92,7 +93,7 @@ def opt():
                 istimeb = 1
             except:
                 phase_begin.append(re.search('\w+', evtb_label).group())
-                phase_begin.append(float(re.search('\W\d+',evtb_label).group()))
+                phase_begin.append(float(re.search('\W\d+', evtb_label).group()))
             try:
                 phase_end.append(float(evte_label))
                 istimee = 1
@@ -127,15 +128,23 @@ def opt():
             if not isdir(outpath):
                 print("No such directory")
                 sys.exit(1)
+        elif op == "-r":
+            if value == '':
+                isresp = 1
+            elif value == '+p':
+                isresp = 2
+            else:
+                print("Error sub-option in -r")
+                sys.exit(1)
         else:
             Usage()
             sys.exit(1)
     return lalo_label, dep_label, begintime, endtime, cata_label, mag_label, phase_begin, phase_end, istimeb, istimee, \
-            network, station, location, channel, stalist, islist, outpath, isoutsta
+            network, station, location, channel, stalist, islist, outpath, isoutsta, isresp
 
 def main():
     lalo_label, dep_label, begintime, endtime, cata_label, mag_label, phase_begin, phase_end, istimeb, istimee, \
-    network, station, location, channel, stalist, islist, path, isoutsta = opt()
+    network, station, location, channel, stalist, islist, path, isoutsta, isresp = opt()
     if (not islist) and (istimeb or istimee):
         print("Cannot specify time range by phases when station info was specified in command line")
         sys.exit(1)
@@ -200,12 +209,42 @@ def main():
                 Timeseries(sta.split()[0], sta.split()[1], sta.split()[2], sta.split()[3],
                            evt_begin.strftime("%Y-%m-%dT%H:%M:%S"),
                            evt_end.strftime("%Y-%m-%dT%H:%M:%S")).download(outpath)
+                if not isoutsta:
+                    if isresp == 1:
+                        Response(sta.split()[0], sta.split()[1], sta.split()[2], sta.split()[3], [evt_begin, evt_end],
+                                 False).download(outpath)
+                    elif isresp == 2:
+                        Response(sta.split()[0], sta.split()[1], sta.split()[2], sta.split()[3], [evt_begin, evt_end],
+                                 True).download(outpath)
+                    else:
+                        continue
         else:
             evt_begin = origin_time + timedelta(seconds=phase_begin[0])
             evt_end = origin_time + timedelta(seconds=phase_end[0])
             Timeseries(network, station, location, channel,
                        evt_begin.strftime("%Y-%m-%dT%H:%M:%S"),
                        evt_end.strftime("%Y-%m-%dT%H:%M:%S")).download(outpath)
+            if isresp == 1:
+                Response(network, station, location, channel, [evt_begin, evt_end],
+                         False).download(outpath)
+            elif isresp == 2:
+                Response(network, station, location, channel, [evt_begin, evt_end],
+                         True).download(outpath)
+            else:
+                continue
+
+    if islist and isoutsta:
+        for sta in stalist:
+            outpath = join(path, sta.split()[0]+'.'+sta.split()[1])
+            sta = sta.strip()
+            if isresp == 1:
+                Response(sta.split()[0], sta.split()[1], sta.split()[2], sta.split()[3], [evt_begin, evt_end],
+                         False).download(outpath)
+            elif isresp == 2:
+                Response(sta.split()[0], sta.split()[1], sta.split()[2], sta.split()[3], [evt_begin, evt_end],
+                         True).download(outpath)
+            else:
+                continue
 
 if __name__ == '__main__':
     main()

@@ -18,6 +18,8 @@ def Usage():
           "      [-b<start-time>] [-e<end-time>] [-t<Timestamp>] [-o<Outpath>] [-P]")
 
 def opt():
+    network = ''
+    station = ''
     location = "*"
     channel = "*"
     timeinfo = []
@@ -33,7 +35,8 @@ def opt():
         print("No argument is found")
         Usage()
         sys.exit(1)
-    
+
+    ops = [op for op, value in opts]
     for op, value in opts:
         if op == "-n":
             network = value
@@ -56,14 +59,18 @@ def opt():
         else:
             print("Invalid arguments")
             sys.exit(1)
-    if "-b" in op and "-e" in op:
+    if "-b" in ops and "-e" in ops:
         timeinfo = [begintime, endtime]
-    elif "-t" in op:
+    elif "-t" in ops:
         timeinfo = [pointtime]
-    elif not ("-b" in op or "-e" in op or "-t" in op):
+    elif not ("-b" in ops or "-e" in ops or "-t" in ops):
         timeinfo = []
+    elif ("-b" in ops or "-e" in ops and "-t" in ops):
+        print("The given time is incompatible with start-time or end-time")
+        sys.exit(1)
     else:
-        print("Wrong option of datetime limitation")
+        print("Error option of datetime limitation")
+        sys.exit(1)
     return network, station, location, channel, timeinfo, ispz, outpath
 
 def main():
