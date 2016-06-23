@@ -15,7 +15,30 @@ from util import Response, get_time
 
 def Usage():
     print("Usage: get_resp -n<Network> -s<Station> [-l<Location>] [-c<Channel>]\n"
-          "      [-b<start-time>] [-e<end-time>] [-t<Timestamp>] [-o<Outpath>] [-P]")
+          "      [-b<start-time>] [-e<end-time>] [-t<Timestamp>] [-o<Out-path>] [-P]")
+    print("     -b Limit to events occurring on or after the specified start time.\n"
+          "       -b<start-time>\n"
+          "          Date and time format: YYYY-MM-DDThh:mm:ss (e.g., 1997-01-31T12:04:32)\n"
+          "                                YYYY-MM-DD (e.g., 1997-01-31)")
+    print("     -c Specify channel code. Accepts wildcards and lists.\n"
+          "        -c<channel>")
+    print("     -e Limit to events occurring on or before the specified end time \n"
+          "        -e<end-time>\n"
+          "           with the same date and time format as \"-b\".")
+    print("     -l Spicify locations code (Use \"--\" for \"Blank\" location). Accepts wildcards and lists.\n"
+          "        -l<location>")
+    print("     -n Specify network code. Accepts wildcards and lists.\n"
+          "        -n<network>")
+    print("     -o Specify Out path\n"
+          "        -o<Out-path>")
+    print("     -P Specify the format of response files. If \"-P\" was specified will output sacpz file (default is RESP file)")
+    print("     -s Specify station code. Accepts wildcards and lists.\n"
+          "        -s<station>")
+    print("     -t Find the response for the given time (incompatible with start-time or end-time)\n"
+          "        -t<Timestamp>\n"
+          "         The date format is same as -b option")
+    print('   -h or --help For help.')
+
 
 def opt():
     network = ''
@@ -26,7 +49,7 @@ def opt():
     ispz = False
     outpath = './'
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "n:s:l:c:b:e:t:o:P")
+        opts, args = getopt.getopt(sys.argv[1:], "n:s:l:c:b:e:t:o:Ph", ["help"])
     except:
         print("Invalid arguments")
         Usage()
@@ -56,6 +79,9 @@ def opt():
             ispz = True
         elif op == "-o":
             outpath = value
+        elif op in ("-h", "--help"):
+            Usage()
+            sys.exit(1)
         else:
             print("Invalid arguments")
             sys.exit(1)

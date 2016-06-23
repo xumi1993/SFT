@@ -39,7 +39,7 @@ def Usage():
     print("    -b Limit to events occurring on or after the specified start time.\n"
           "       -b<start-time>\n"
           "          Date and time format: YYYY-MM-DDThh:mm:ss (e.g., 1997-01-31T12:04:32)\n"
-          "                              YYYY-MM-DD (e.g., 1997-01-31)")
+          "                                YYYY-MM-DD (e.g., 1997-01-31)")
     print("     -c Specify channel code. Accepts wildcards and lists.\n"
           "        -c<channel>")
     print("     -e Limit to events occurring on or before the specified end time \n"
