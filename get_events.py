@@ -7,6 +7,7 @@
 # History: 2016-05-03, Init code, Mijian Xu
 #          2016-05-07, Create opt function, Tao Gou
 #          2016-06-02, Modify date and time options, Mijian Xu
+#          2017-01-09, Fix bugs in Usage, Mijian Xu
 #
 
 import sys
@@ -24,9 +25,11 @@ def Usage():
     print("    -D RADIAL search terms (incompatible with the box search)")
     print("    -H Limit to events with depth between this range.")
     print("    -M Limit to events with magnitude between this range.\n"
-          "       Specify magnitude type e.g., ML, Ms, mb, Mw")
+          "       minmag: Limit to events with a magnitude larger than or equal to the specified minimum.\n"
+          "       maxmag: Limit to events with a magnitude smaller than or equal to the specified maximum.\n"
+          "       magtype: Specify magnitude type e.g., ML, Ms, mb, Mw\n")
     print("    -O Output parameters\n"
-          "       -O[+c][+s<time>|<mag>]"
+          "       -O[+c][+s<time>|<mag>]\n"
           "         +c If -c specified results should not include station and channel comments.\n"
           "         +s Order results by \"time\" or \"magnitude\", (\"time\" is default).")
     print("    -R BOX search terms (incompatible with radial search)")
