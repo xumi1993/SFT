@@ -10,7 +10,7 @@ git clone https://github.com/xumi1993/SFT.git
 ```
 
 ## Update
-```
+```shell
 cd /path/to/SFT
 git pull
 ```
