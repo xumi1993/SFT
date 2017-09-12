@@ -128,8 +128,9 @@ class Events:
 
     url = 'http://service.iris.edu/fdsnws/event/1/'
 
-    def __init__(self, lalo_label, dep_label, mag_label, cata_label, date_label, sort_label, iscomment):
+    def __init__(self, lalo_label, dep_label, mag_label, cata_label, date_label, sort_label, iscomment, isreverse):
         self.iscomment = iscomment
+        self.isreverse = isreverse
         self.urllink = ('%squery?&%s%s%s%s%s%sformat=text' %(self.url, lalo_label,
                          dep_label, mag_label, cata_label, date_label, sort_label))
 
@@ -139,10 +140,18 @@ class Events:
         except:
             print('Something wrong for unknown reason!')
             sys.exit(1)
+        resp = self.response.readlines()
+        if resp == []:
+            print('No matched events!')
+            sys.exit(1)
+        head_line = resp[0]
+        contents = resp[1:]
+        if self.isreverse:
+            contents.reverse()
         if self.iscomment:
-            self.out_events = self.response.readlines()
+            self.out_events = [head_line] + contents
         else:
-            self.out_events = self.response.readlines()[1:]
+            self.out_events = contents
 
     def output(self):
         for evt in self.out_events:

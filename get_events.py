@@ -48,6 +48,7 @@ def opt():
     sort_label = ''
     cata_label = ''
     iscomment = True
+    isreverse = False
     try:
         opts, args = getopt.getopt(sys.argv[1:], "R:D:b:e:c:H:M:O:")
     except:
@@ -105,6 +106,8 @@ def opt():
                         sys.exit(1)
                 elif sub_op[0] == "c":
                     iscomment = False
+                elif sub_op[0] == "r":
+                    isreverse = True
                 else:
                     print("Invalid arguments in \"-O\"")
                     sys.exit(1)
@@ -114,11 +117,11 @@ def opt():
             sys.exit(1)
     date_label = "start="+begintime.strftime("%Y-%m-%dT%H:%M:%S")+\
                  "&end="+endtime.strftime("%Y-%m-%dT%H:%M:%S")+"&"
-    return lalo_label, dep_label, mag_label, cata_label, date_label, sort_label, iscomment
+    return lalo_label, dep_label, mag_label, cata_label, date_label, sort_label, iscomment, isreverse
 
 def main():
-    lalo_label, dep_label, mag_label, cata_label, date_label, sort_label, iscomment = opt()
-    events = Events(lalo_label, dep_label, mag_label, cata_label, date_label, sort_label, iscomment)
+    lalo_label, dep_label, mag_label, cata_label, date_label, sort_label, iscomment, isreverse = opt()
+    events = Events(lalo_label, dep_label, mag_label, cata_label, date_label, sort_label, iscomment, isreverse)
     events.download()
     events.output()
 
