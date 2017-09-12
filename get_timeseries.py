@@ -24,7 +24,7 @@ def Usage():
           "               Can be SEED codes or data center defined codes.")
     print("    -s<station> Select one or more SEED station codes. Accepts wildcards and lists.")
     print("    -l<location> Select one or more SEED location identifier. Accepts wildcards and lists.\n"
-          "                Use -- for \"Blank\" location IDs (ID’s containing 2 spaces).")
+          "                Use -- for \"Blank\" location IDs (ID's containing 2 spaces).")
     print("    -c<channel> Select one or more SEED channel codes. Accepts wildcards and lists.")
     print("    -o<out-path> Specify out path")
     print("See http://service.iris.edu/fdsnws/dataselect/1/ for more details.")
