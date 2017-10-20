@@ -1,0 +1,3 @@
+[console_scripts]
+get_events = sft.get_events:main
+
