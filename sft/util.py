@@ -96,7 +96,7 @@ class Stations:
 
     def output(self):
         for sta in self.out_station:
-            print(str(sta).strip())
+            print(sta.decode().strip())
 
 
     def gmt_script(self):
