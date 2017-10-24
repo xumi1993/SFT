@@ -2,17 +2,12 @@
 Seismic fetch tools based on IRIS Web Services
 
 ## Dependencies
+* Linux/Macos platform
 * Python 2.7.x or Python 3.x.x
 
-## Download
+## Download and Install
 ```
-git clone https://github.com/xumi1993/SFT.git
-```
-
-## Update
-```shell
-cd /path/to/SFT
-git pull
+pip install SFT
 ```
 
 ## Inclusion
@@ -22,3 +17,8 @@ git pull
 * get_resp: Instrument response information evaluated from IRIS metadata
 * get_timeseries: Time series data in miniSEED format
 * get_synthetics.py: An API of IRIS Synthetics Engine (Syngine) service, which provides custom tailored synthetic seismograms
+
+## Usage
+```
+<cmd> -h
+```
