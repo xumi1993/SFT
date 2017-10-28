@@ -12,14 +12,5 @@ sft.egg-info/SOURCES.txt
 sft.egg-info/dependency_links.txt
 sft.egg-info/entry_points.txt
 sft.egg-info/not-zip-safe
+sft.egg-info/requires.txt
 sft.egg-info/top_level.txt
-sft/blessings/__init__.py
-sft/blessings/tests.py
-sft/progressive/__init__.py
-sft/progressive/bar.py
-sft/progressive/cursor.py
-sft/progressive/examples.py
-sft/progressive/exceptions.py
-sft/progressive/pretty.py
-sft/progressive/tree.py
-sft/progressive/util.py
