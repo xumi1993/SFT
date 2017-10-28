@@ -6,7 +6,7 @@ setup(
     url = 'https://github.com/xumi1993/SFT',
     author = 'Mijian Xu',
     author_email = 'gomijianxu@gmail.com',
-    packages = find_packages(),  
+    packages = find_packages(),
     package_dir = {'sft':'sft'},
     entry_points = {'console_scripts':[
             'get_events = sft.get_events:main',
@@ -17,6 +17,7 @@ setup(
             'get_traveltime = sft.get_traveltime:main'
             ],
             },
+    install_requires = ['progressive']
     include_package_data=True,
     zip_safe=False
 )
