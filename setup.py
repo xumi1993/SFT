@@ -17,7 +17,7 @@ setup(
             'get_traveltime = sft.get_traveltime:main'
             ],
             },
-    install_requires = ['progressive']
+    install_requires = ['progressive', 'blessings']
     include_package_data=True,
     zip_safe=False
 )
