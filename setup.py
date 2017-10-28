@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "sft",
-    version = "0.1",
+    version = "0.1.1",
     url = 'https://github.com/xumi1993/SFT',
     author = 'Mijian Xu',
     author_email = 'gomijianxu@gmail.com',
